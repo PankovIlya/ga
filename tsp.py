@@ -61,7 +61,7 @@ class ExchangeCity(ga.Mutation):
             idx2 = random.randint(0, individual.count-1)
             change(idx1, idx2)
 
-        if individual.fitness()*individual.back < fx:
+        if individual.fitness() < fx*individual.back:
             CrossFide().mutate(individual, cnt)
 
 
@@ -83,7 +83,7 @@ class MoveCity(ga.Mutation):
                     
         individual[idx1]._id = id2
 
-        if individual.fitness()*individual.back < fx:
+        if individual.fitness() < fx*individual.back:
             CrossFide().mutate(individual, cnt)
 
 
@@ -96,14 +96,16 @@ class CrossFide(ga.Mutation):
             
         #start = random.randint(0, individual.count - cnt - 1)
         for i in xrange(0, individual.count - 2):
-            for idx in xrange(i+2, individual.count):
-                j = idx % (individual.count-1)
-                if individual.vertexs.intersection(individual[i].id, individual[i+1].id, individual[j].id, individual[j+1].id):
-                    fx = individual.fx
+            for j in xrange(i+2, individual.count):
+                if individual.vertexs.intersection(individual[i].id,
+                                                   individual[i+1].id,
+                                                   individual[j].id,
+                                                   individual[(j+1) % (individual.count-1)].id):
+                    fx, x = individual.fx, individual.x
                     change(i, j)
-                    #if individual.fitness() > fx:
-                     #   change(i, j)
-                      #  individual.fitness()
+                    if individual.fitness() > fx:
+                        change(i, j)
+                        individual.fx = x
 
                     
 
@@ -127,8 +129,8 @@ class Gready(ga.Mutation):
             change(nextcity, nearcity)
             individual.ordval()
 
-        #if individual.fitness()*individual.back < fx:
-        #    CrossFide().mutate(individual, cnt)
+        if individual.fitness() < fx*individual.back:
+            CrossFide().mutate(individual, cnt)
 
 
 
@@ -139,8 +141,8 @@ class TSP( object ):
         self.iteration = iteration
 
     def calc(self):
-        self.tspga = ga.Evolution(size = 700, iteration = self.iteration, mutationtype = ga.muRandom,
-                                  generatemutation = 10, populationratemutation = 80,
+        self.tspga = ga.Evolution(size = 50, iteration = self.iteration, mutationtype = ga.muStatic,
+                                  generatemutation = 2, populationratemutation = 100,
                                   ClassIndividual = Way, MutationsClass = [Gready, MoveCity, ExchangeCity],
                                   args = [self.vertexs])
         self.tspga.init()
@@ -189,8 +191,8 @@ if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                                   math.pow((v1.lat - v2.lat),2), 0.5))
-    tsp = TSP(600, foostraightlen)
-    tsp.load('testt.json')
+    tsp = TSP(4000, foostraightlen)
+    tsp.load('points.json')
     #print tsp.vertexs.vertexlist
     #print tsp.vertexs.distance[1][9]
 

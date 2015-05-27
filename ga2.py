@@ -124,7 +124,7 @@ class Individual (object):
 class Population (object):
     def __init__(self, bestprotected = True, opt_type = otMin,
                  ClsInd = None, args = [], calc_fitness = True,
-                 rate_procent = 0.2, best_population_rate = 0.05):
+                 rate_procent = 0.1, best_population_rate = 0.08):
         self.bestprotected = bestprotected
         self.args = args
         self.optimisationtype = opt_type
@@ -182,10 +182,10 @@ class Population (object):
         for ind in self.individuals:
             if self.calc_fitness:
                 ind.fitness()
-            if ind.x < self.min:
+            if ind.fx < self.min:
                 self.min = ind.x    
-            if ind.x > self.max:
-                self.max = ind.x
+            if ind.fx > self.max:
+                self.max = ind.fx
             if self.selection(self.best, ind) == 1: 
                 self.best = ind
             self.sumx += ind.x
@@ -226,7 +226,7 @@ class Population (object):
             return self.count - 1
  
         self.csort()
-        val = self.best.fx*(1+self.rate_procent)
+        val = self.best.fx + ((self.max-self.best.fx)*self.rate_procent)
         cnt = find(val)
 
         if cnt < self.count*self.best_population_rate:
@@ -379,7 +379,7 @@ class Evolution (object):
             children.append(self.meiosis(self.population.conceiving(), parent1, parent2))
             children.append(self.meiosis(self.population.conceiving(), parent2, parent1))
 
-        children += [parent1, parent2] 
+        children += [parent1.clone(), parent2.clone()] 
         self.population.rang(children)
         #print [child.fx for child in children]
 
@@ -425,7 +425,7 @@ if __name__ == "__main__":
 
 
 
-    min_x2 = Evolution(iteration = 15, mutationtype = muRandom,
+    min_x2 = Evolution(iteration = 20, mutationtype = muRandom,
                       generatemutation = 30, populationratemutation = 80,
                       ClassIndividual = X2,
                       MutationsClass = [MRand], printlocalresult = True)
