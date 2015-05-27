@@ -123,7 +123,8 @@ class Individual (object):
             
 class Population (object):
     def __init__(self, bestprotected = True, opt_type = otMin,
-                 ClsInd = None, args = [], calc_fitness = True):
+                 ClsInd = None, args = [], calc_fitness = True,
+                 rate_procent = 0.2, best_population_rate = 0.05):
         self.bestprotected = bestprotected
         self.args = args
         self.optimisationtype = opt_type
@@ -138,6 +139,9 @@ class Population (object):
         self.sumfx = 0
         self.sumoptfx = 0.0
         self.optfoo = OptimisationType[opt_type]
+        self.rate_procent = rate_procent
+        self.best_population_rate = best_population_rate
+        self.best_population_idx = 0
 
     def clone(self):
         children = self.__class__(self.bestprotected, self.optimisationtype, self.ClsInd, self.args)
@@ -215,18 +219,27 @@ class Population (object):
     cround = staticmethod(lambda x: round(x,5))
 
     def rate(self):
-        self.successlist = []
-        for ind in self.individuals:
-            cnt = int(round(self.foosuccessrate(self.optfoo(ind.fx))*self.count)) + 2
-            self.successlist += [ind for i in xrange(cnt)]
+        def find(val):
+            for i in xrange(self.count):
+                if self[i].fx > val:
+                    return i-1
+            return self.count - 1
+ 
+        self.csort()
+        val = self.best.fx*(1+self.rate_procent)
+        cnt = find(val)
 
-        random.shuffle(self.successlist) #!!!
+        if cnt < self.count*self.best_population_rate:
+            cnt = int(self.count*self.best_population_rate)
+            
+        self.best_population_idx = cnt
+
 
     def calc(self):
         self.extreme()
         self.rate()
 
-    def csort(self):
+    def csort(self):  
         self.individuals.sort(cmp = self.selection)
 
     def generation(self, size):
@@ -235,11 +248,12 @@ class Population (object):
             ind.randomcreate()
             ind.fitness()
             self.individuals.append(ind)
+        self.best_population_idx = self.count - 1  
             
 
     def parent(self):
-        i = random.randint(0, len(self.successlist)-1)
-        return self.successlist[i]
+        i = random.randint(0, self.best_population_idx)
+        return self[i]
         
 
 class Mutation (object):
@@ -321,10 +335,10 @@ class Evolution (object):
 
     def calc(self):
         i = 0
-        for _ in xrange(self.iteration):
+        for i in xrange(self.iteration):
             self.anthropogeny()
             if self.printlocalresult:
-                print 'population', self.population.count, ' best ', self.population.best
+                print 'population', i, ' best ', self.population.best
                         
             
     def anthropogeny(self):
@@ -342,14 +356,17 @@ class Evolution (object):
             else:
                 vparent1 = parents.best() # test
 
-            vparent2 = parents.parent()
+            i = 0
+            vparent2 = vparent1
+            while vparent2 == vparent1 and i < 100:
+                vparent2 = parents.parent()
+                i += 1
 
-            if 0 == 0 or vparent1 != vparent2:
-                for child in self.fertilisation(vparent1, vparent2):
-                    children.add(child)    
-            else:
-                children.add(vparent1.clone())
-                children.add(vparent2.clone())
+            if i == 100:
+                parents.best_population_idx
+        
+            for child in self.fertilisation(vparent1, vparent2):
+                children.add(child)    
                 
         return children
 
