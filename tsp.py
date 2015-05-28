@@ -42,7 +42,12 @@ class Way (ga.Individual):
             raise Exception('City count < 2!')
         for i in xrange(cnt):
             g = self.addgen()
-            g.val = random.randint(i,cnt-1)
+
+        random.shuffle(self.dna)
+
+        for i in xrange(cnt):
+            self[i].val = i 
+
         self.fitness()
         CrossFide().mutate(self, 0)
 
@@ -100,11 +105,11 @@ class CrossFide(ga.Mutation):
                 if individual.vertexs.intersection(individual[i].id,
                                                    individual[i+1].id,
                                                    individual[j].id,
-                                                   individual[(j+1) % (individual.count-1)].id):
+                                                   individual[(j+1) % (individual.count)].id):
                     fx, x = individual.fx, individual.x
-                    change(i, j)
+                    change(i+1, j)
                     if individual.fitness() > fx:
-                        change(i, j)
+                        change(i+1, j)
                         individual.fx = x
 
                     
