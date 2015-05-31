@@ -73,20 +73,20 @@ class ExchangeCity(ga.Mutation):
 class MoveCity(ga.Mutation):
     def mutate(self, individual, cnt):
         fx = individual.fx
+        for _ in xrange(cnt):
+            idx1 = random.randint(0, individual.count-1)
+            idx2 = random.randint(0, individual.count-1)
 
-        idx1 = random.randint(0, individual.count-1)
-        idx2 = random.randint(0, individual.count-1)
+            if idx1 <= idx2:
+                k = -1
+            else:
+                k = 1
 
-        if idx1 <= idx2:
-            k = -1
-        else:
-            k = 1
-
-        id2 = individual[idx2]._id
-        for i in xrange(idx2, idx1, k):
-            individual[i]._id = individual[i+k]._id
+            id2 = individual[idx2]._id
+            for i in xrange(idx2, idx1, k):
+                individual[i]._id = individual[i+k]._id
                     
-        individual[idx1]._id = id2
+            individual[idx1]._id = id2
 
         if individual.fitness() < fx*individual.back:
             CrossFide().mutate(individual, cnt)
@@ -146,9 +146,9 @@ class TSP( object ):
         self.iteration = iteration
 
     def calc(self):
-        self.tspga = ga.Evolution(size = 50, iteration = self.iteration, mutationtype = ga.muStatic,
-                                  generatemutation = 2, populationratemutation = 100,
-                                  ClassIndividual = Way, MutationsClass = [Gready, MoveCity, ExchangeCity],
+        self.tspga = ga.Evolution(size = 50, iteration = self.iteration, mutationtype = ga.muRandom,
+                                  generatemutation = 4, populationratemutation = 100,
+                                  ClassIndividual = Way, MutationsClass = [ExchangeCity, MoveCity], #MoveCity
                                   args = [self.vertexs])
         self.tspga.init()
         self.tspga.calc()
@@ -169,8 +169,8 @@ class TSP( object ):
             draw.line((self.vertexs[best[i].id].lon, self.vertexs[best[i].id].lat,
                        self.vertexs[best[i+1].id].lon, self.vertexs[best[i+1].id].lat),(0,0,0))
 
-        draw.line((self.vertexs[best[-1].id].lon, self.vertexs[best[-1].id].lat,
-                      self.vertexs[best[0].id].lon, self.vertexs[best[0].id].lat), (0,0,0))
+        #draw.line((self.vertexs[best[-1].id].lon, self.vertexs[best[-1].id].lat,
+        #              self.vertexs[best[0].id].lon, self.vertexs[best[0].id].lat), (0,0,0))
 
         im.save("result.bmp", "BMP")
 
@@ -196,7 +196,7 @@ if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                                   math.pow((v1.lat - v2.lat),2), 0.5))
-    tsp = TSP(4000, foostraightlen)
+    tsp = TSP(5000, foostraightlen)
     tsp.load('points.json')
     #print tsp.vertexs.vertexlist
     #print tsp.vertexs.distance[1][9]

@@ -82,7 +82,7 @@ class Vertexs (object):
         if ((ax1 <=xi) and (ax2>=xi)) or ((ax1>=xi) and (ax2<=xi)):
             if ((ay1<=yi) and (ay2>=yi)) or ((ay1>=yi) and (ay2<=yi)):
                 if ((bx1<=xi) and (bx2>=xi)) or ((bx1>=xi) and (bx2<=xi)):
-                    if ((bx1<=xi) and (bx2>=xi)) or ((bx1>=xi) and (bx2<=xi)):
+                    if ((by1<=yi) and (by2>=yi)) or ((by1>=yi) and (by2<=yi)):
                         res = True
         return res
 

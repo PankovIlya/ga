@@ -124,7 +124,7 @@ class Individual (object):
 class Population (object):
     def __init__(self, bestprotected = True, opt_type = otMin,
                  ClsInd = None, args = [], calc_fitness = True,
-                 rate_procent = 0.1, best_population_rate = 0.08):
+                 rate_procent = 0.10, best_population_rate = 0.20):
         self.bestprotected = bestprotected
         self.args = args
         self.optimisationtype = opt_type
@@ -163,6 +163,9 @@ class Population (object):
     def __getitem__(self, idx):
         return self.individuals[idx]
 
+    def __setitem__(self, idx, val):
+        self.individuals[idx] = val
+
     def conceiving(self):
         ind = self.ClsInd(*self.args)
         return ind
@@ -186,8 +189,8 @@ class Population (object):
                 self.min = ind.x    
             if ind.fx > self.max:
                 self.max = ind.fx
-            if self.selection(self.best, ind) == 1: 
-                self.best = ind
+            if self.selection(vbest, ind) == 1: 
+                vbest = ind
             self.sumx += ind.x
             self.sumfx += ind.fx
                 
@@ -229,8 +232,8 @@ class Population (object):
         val = self.best.fx + ((self.max-self.best.fx)*self.rate_procent)
         cnt = find(val)
 
-        if cnt < self.count*self.best_population_rate:
-            cnt = int(self.count*self.best_population_rate)
+        #3if cnt < self.count*self.best_population_rate:
+        #    cnt = int(self.count*self.best_population_rate)
             
         self.best_population_idx = cnt
 
@@ -347,7 +350,9 @@ class Evolution (object):
         self.population.calc()
 
     def crossingover(self, parents):
-
+        #parents[-1] = parents.best.clone()
+        #return parents
+        
         children = parents.clone()
    
         for _ in xrange(parents.count//2):
