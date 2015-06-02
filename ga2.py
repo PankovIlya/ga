@@ -124,7 +124,7 @@ class Individual (object):
 class Population (object):
     def __init__(self, bestprotected = True, opt_type = otMin,
                  ClsInd = None, args = [], calc_fitness = True,
-                 rate_procent = 0.10, best_population_rate = 0.20):
+                 rate_procent = 0.15, best_population_rate = 0.15):
         self.bestprotected = bestprotected
         self.args = args
         self.optimisationtype = opt_type
@@ -232,8 +232,8 @@ class Population (object):
         val = self.best.fx + ((self.max-self.best.fx)*self.rate_procent)
         cnt = find(val)
 
-        #3if cnt < self.count*self.best_population_rate:
-        #    cnt = int(self.count*self.best_population_rate)
+        if cnt < self.count*self.best_population_rate:
+            cnt = int(self.count*self.best_population_rate)
             
         self.best_population_idx = cnt
 
@@ -260,43 +260,111 @@ class Population (object):
         
 
 class Mutation (object):
+    def __init__(self):
+        self.rate = 0
+        self.weight = 0
+        self.name = ""
+        self.advance = 0
+        self.total = 0
     def mutate(self, individual, cnt):
         raise Exception('Abstract method')
 
 
 class Mutations (object):
     def __init__(self):
-        self.mutationslist = []
-        
+        self.mutations = []
+        self.all_total = 0
+        self.all_advance = 0
 
     def __getitem__(self, idx):
-        return self.mutationslist[idx]
+        return self.mutations[idx]
         
     def add(self, mutation):
-        self.mutationslist.append(mutation)
+        self.mutations.append(mutation)
+        
 
-    count = property(lambda self: len(self.mutationslist))
+    def __str__(self):
+        for mut in self.mutations:
+            print mut.name, mut.weight, mut.rate, mut.advance, mut.total
+        return 'all_advance ' + str(self.all_advance) + ' all_total ' + str(self.all_total)
+
+    def calc_info(self):
+
+        all_w = 0
+        for mut in self.mutations:
+            mut.weight = mut.advance*100/mut.total
+            all_w += mut.weight
+
+        if all_w == 0:
+            return
+            
+        k = 1
+        for mut in self.mutations:
+            mut.rate = mut.weight*k/all_w
+            if mut.rate < 0.05:
+                mut.rate = 0.05
+                k -= mut.rate
+                all_w -= mut.weight
+
+        rate = 0
+        for mut in self.mutations:
+            rate += mut.rate
+            mut.rate = rate
+                
+       
+        
+    def init(self):
+        def check():
+            for mut in self.mutations:
+                if mut.rate == 0:
+                    return False
+            return True
+
+        if not check():
+            val = 1/self.count
+            for idx in xrange(self.count-1):
+                self[idx].rate = idx*val
+
+            self[-1].rate = 1
+                
+    count = property(lambda self: len(self.mutations))
+
+    def get_mutation(self):
+        val_m = random.random()
+        #print [mut.rate for mut in self.mutations]
+        for mut in self.mutations:
+            if val_m < mut.rate:
+                return mut
+        
 
     def mutagenesis(self, population, mutationtype, populationratemutation, generatemutation):
-
+        
         if self.count == 0:
             return
-        
-        cnt_pop_mut = (population.count * populationratemutation) // 100;
-                
-        for _ in xrange(cnt_pop_mut):
+                       
+        for idx in xrange(population.count):
             #select mutation
-            idx_m =  random.randint(0, self.count-1)
-            #select individ
-            idx_i = random.randint(0, population.count - 1) 
-
-            cnt = int(((population[idx_i].count-1)*generatemutation)//100) + 1
-            if mutationtype == muRandom:
-                cnt = random.randint(1, cnt) 
+            mutation = self.get_mutation()
             
-            self[idx_m].mutate(population[idx_i], cnt)
+            cnt = int(((population[idx].count-1)*generatemutation)//100) + 1
 
-    
+            if mutationtype == muRandom:
+                cnt = random.randint(1, cnt)
+
+            
+                
+            mutation.total += 1
+            self.all_total += 1
+
+            fx = population[idx].fx
+
+            mutation.mutate(population[idx], cnt)
+
+            if fx > population[idx].fx:
+                mutation.advance += 1
+                self.all_advance += 1
+
+        self.calc_info()    
         
 
 class Evolution (object):
@@ -330,6 +398,8 @@ class Evolution (object):
 
         for mCls in self.MutationCls:
             self.mutations.add(mCls())
+
+        self.mutations.init()
 
         self.population.calc()
 
@@ -402,6 +472,7 @@ class Evolution (object):
 
     def mutation(self):
         self.mutations.mutagenesis(self.population, self.mutationtype, self.populationratemutation, self.generatemutation)
+        print self.mutations
 
     def printbest(self):
         print self.population.best
@@ -423,14 +494,20 @@ if __name__ == "__main__":
                 g.val = x
 
     class MRand (Mutation):
+        def __init__(self):
+            Mutation.__init__(self)
+            self.name = 'Random'
+        
         def mutate(self, individual, cnt):
             for i in xrange(cnt):
                 idx = random.randint(0, individual.count-1)
                 individual[idx].val = random.randint(0,1)
 
+            individual.fitness()
 
 
-    min_x2 = Evolution(iteration = 20, mutationtype = muRandom,
+
+    min_x2 = Evolution(size = 100, iteration = 30, mutationtype = muRandom,
                       generatemutation = 30, populationratemutation = 80,
                       ClassIndividual = X2,
                       MutationsClass = [MRand], printlocalresult = True)

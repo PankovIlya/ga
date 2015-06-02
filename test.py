@@ -20,6 +20,11 @@ arr = [1,2,3,4,5]
 for i in xrange(0, len(arr) - 2):
     for j in xrange(i+2, len(arr)):
         print arr[i], arr[i+1], arr[j], arr[(j+1) % len(arr)]
+
+for idx in xrange(len(arr)):
+    arr += [idx]
+
+print arr
            
 print "save"
 
