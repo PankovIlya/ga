@@ -122,9 +122,10 @@ class Individual (object):
         
             
 class Population (object):
-    def __init__(self, bestprotected = True, opt_type = otMin,
+    def __init__(self, populationsize = 100, bestprotected = True, opt_type = otMin,
                  ClsInd = None, args = [], calc_fitness = True,
                  rate_procent = 0.15, best_population_rate = 0.15):
+        self.populationsize = populationsize 
         self.bestprotected = bestprotected
         self.args = args
         self.optimisationtype = opt_type
@@ -234,6 +235,8 @@ class Population (object):
 
         if cnt < self.count*self.best_population_rate:
             cnt = int(self.count*self.best_population_rate)
+        elif cnt >= self.populationsize:
+            cnt = self.populationsize-1
             
         self.best_population_idx = cnt
 
@@ -241,6 +244,7 @@ class Population (object):
     def calc(self):
         self.extreme()
         self.rate()
+        self.individuals = self.individuals[:self.populationsize]
 
     def csort(self):  
         self.individuals.sort(cmp = self.selection)
@@ -266,15 +270,16 @@ class Mutation (object):
         self.name = ""
         self.advance = 0
         self.total = 0
-    def mutate(self, individual, cnt):
+    def mutate(self, individual, cnt, population):
         raise Exception('Abstract method')
 
 
 class Mutations (object):
-    def __init__(self):
-        self.mutations = []
+    def __init__(self, childcount = 2):
+        self.mutations = [Crossingover()]
         self.all_total = 0
         self.all_advance = 0
+        self.childcount = childcount 
 
     def __getitem__(self, idx):
         return self.mutations[idx]
@@ -346,10 +351,14 @@ class Mutations (object):
             #select mutation
             mutation = self.get_mutation()
             
-            cnt = int(((population[idx].count-1)*generatemutation)//100) + 1
+            if isinstance(mutation, Crossingover):
+                cnt = self.childcount
+            else:
+                cnt = int(((population[idx].count-1)*generatemutation)//100) + 1
 
-            if mutationtype == muRandom:
-                cnt = random.randint(1, cnt)
+                if mutationtype == muRandom:
+                    cnt = random.randint(1, cnt)
+                    
 
             
                 
@@ -358,13 +367,63 @@ class Mutations (object):
 
             fx = population[idx].fx
 
-            mutation.mutate(population[idx], cnt)
+            mutation.mutate(population[idx], cnt, population)
 
             if fx > population[idx].fx:
                 mutation.advance += 1
                 self.all_advance += 1
 
-        self.calc_info()    
+        self.calc_info()
+
+class Crossingover (Mutation):
+    def __init__(self):
+            Mutation.__init__(self)
+            self.name = 'Crossingover'
+            self.childcount = 0
+            self.population = None
+
+    def mutate(self, individual, cnt, parent):
+        self.childcount = cnt
+        self.population = parent
+
+        vparent1 = parents.parent()
+
+        i = 0
+        vparent2 = vparent1
+        while vparent2 == vparent1 and i < 100:
+            vparent2 = parents.parent()
+            i += 1
+
+        if i == 100:
+            print '!!! warning !!! no parent for Crossingover ', parents.best_population_idx
+    
+        for child in self.fertilisation(vparent1, vparent2):
+            parents.add(child)    
+                
+ 
+    def fertilisation(self, parent1, parent2):
+
+        children = []
+        
+        for _ in xrange(self.child_count):
+            children.append(self.meiosis(self.population.conceiving(), parent1, parent2))
+            children.append(self.meiosis(self.population.conceiving(), parent2, parent1))
+
+        children += [parent1.clone(), parent2.clone()] 
+        self.population.rang(children)
+        #print [child.fx for child in children]
+
+        return children[:self.child_count*2]
+
+    def meiosis(self, child, parent1, parent2):
+
+        len_chr = random.randint(0, parent1.count)
+
+        child.dna = parent1[:len_chr] + parent2[len_chr:]
+        child.fitness()
+
+        return child
+
         
 
 class Evolution (object):
@@ -391,7 +450,7 @@ class Evolution (object):
         
 
     def init(self):
-        self.population = Population(self.bestprotected, otMin, self.ClsInd, self.args)
+        self.population = Population(self.populationsize, self.bestprotected, otMin, self.ClsInd, self.args)
         self.population.init()
         self.generation()
         self.mutations = Mutations()
@@ -415,60 +474,9 @@ class Evolution (object):
                         
             
     def anthropogeny(self):
-        self.population = self.crossingover(self.population)
         self.mutation()
         self.population.calc()
-
-    def crossingover(self, parents):
-        #parents[-1] = parents.best.clone()
-        #return parents
-        
-        children = parents.clone()
-   
-        for _ in xrange(parents.count//2):
-            if self.crossingovertype == coRandom:
-                vparent1 = parents.parent()
-            else:
-                vparent1 = parents.best() # test
-
-            i = 0
-            vparent2 = vparent1
-            while vparent2 == vparent1 and i < 100:
-                vparent2 = parents.parent()
-                i += 1
-
-            if i == 100:
-                parents.best_population_idx
-        
-            for child in self.fertilisation(vparent1, vparent2):
-                children.add(child)    
-                
-        return children
-
-
-    def fertilisation(self, parent1, parent2):
-
-        children = []
-        
-        for _ in xrange(self.child_count):
-            children.append(self.meiosis(self.population.conceiving(), parent1, parent2))
-            children.append(self.meiosis(self.population.conceiving(), parent2, parent1))
-
-        children += [parent1.clone(), parent2.clone()] 
-        self.population.rang(children)
-        #print [child.fx for child in children]
-
-        return children[:2]
-
-    def meiosis(self, child, parent1, parent2):
-
-        len_chr = random.randint(0, parent1.count)
-
-        child.dna = parent1[:len_chr] + parent2[len_chr:]
-        child.fitness()
-
-        return child
-
+    
 
     def mutation(self):
         self.mutations.mutagenesis(self.population, self.mutationtype, self.populationratemutation, self.generatemutation)
@@ -498,7 +506,7 @@ if __name__ == "__main__":
             Mutation.__init__(self)
             self.name = 'Random'
         
-        def mutate(self, individual, cnt):
+        def mutate(self, individual, cnt, population):
             for i in xrange(cnt):
                 idx = random.randint(0, individual.count-1)
                 individual[idx].val = random.randint(0,1)
@@ -507,7 +515,7 @@ if __name__ == "__main__":
 
 
 
-    min_x2 = Evolution(size = 100, iteration = 30, mutationtype = muRandom,
+    min_x2 = Evolution(size = 100, iteration = 40, mutationtype = muRandom,
                       generatemutation = 30, populationratemutation = 80,
                       ClassIndividual = X2,
                       MutationsClass = [MRand], printlocalresult = True)
