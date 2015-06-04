@@ -18,7 +18,10 @@ otMin = 0
 otMax = 1
 optmin = lambda x: 1.0/(x+1.0)
 optmax = lambda x: x
+cmin = lambda x1, x2: cmp(x2, x1)
+cmax = lambda x1, x2: cmp(x1, x2)
 OptimisationType = {otMin:optmin, otMax:optmax}
+CompareType = {otMin:cmin, otMax:cmax}
 
 
 class Gene (object):
@@ -205,10 +208,8 @@ class Population (object):
 
     def selection(self, ind1, ind2):
         ofx1, ofx2 = self.optfoo(ind1.fx), self.optfoo(ind2.fx)
-        if self.optimisationtype == otMin:
-            return cmp(ofx2, ofx1)
-        else:
-            return cmp(ofx1, ofx2)
+        return CompareType[self.optimisationtype](ofx1, ofx2)
+
 
     def rang(self, group):
         group.sort(cmp = self.selection)       
@@ -276,7 +277,7 @@ class Mutation (object):
 
 class Mutations (object):
     def __init__(self, childcount = 2):
-        self.mutations = [Crossingover()]
+        self.mutations = []
         self.all_total = 0
         self.all_advance = 0
         self.childcount = childcount 
@@ -370,12 +371,14 @@ class Mutations (object):
 
             res = mutation.mutate(population[idx], cnt, population)
 
-            if fx > population[idx].fx:
+            if  CompareType[population.optimisationtype](population[idx].fx, fx) == 1: 
                 mutation.advance += 1
                 self.all_advance += 1
             elif res:
                 mutation.advance += res
                 self.all_advance += res
+                mutation.total += res - 1
+                self.all_total += res - 1
 
         self.calc_info()
 
@@ -385,6 +388,9 @@ class Crossingover (Mutation):
             self.name = 'Crossingover'
             self.childcount = 0
             self.population = None
+
+    def after_mutate(self, children, res, population):
+        pass
 
     def mutate(self, individual, cnt, parents):
         res = 0
@@ -407,9 +413,13 @@ class Crossingover (Mutation):
 
         for child in children:
             parents.add(child)
+            #print child.fx, vparent1.fx,  vparent2.fx
+            #print parents.selection(vparent1, child), parents.selection(vparent2, child)
             if parents.selection(vparent1, child) == 1 \
                 or  parents.selection(vparent2, child) == 1:
                 res += 1
+
+        self.after_mutate(children, res, parents)
 
         return res
 
@@ -440,7 +450,7 @@ class Crossingover (Mutation):
         
 
 class Evolution (object):
-    def __init__(self, size = 100, iteration = 25, generatemutation = 100,
+    def __init__(self, size = 100, iteration = 20, generatemutation = 100,
                  populationratemutation = 100, mutationtype = muRandom,
                  bestprotected = True, crossingovertype = coRandom,
                  ClassIndividual = None, MutationsClass = [], args = [],
@@ -459,7 +469,7 @@ class Evolution (object):
         self.population = None
         self.mutations = []
         self.init()
-        self.child_count = 2
+        self.child_count = 1
         
 
     def init(self):
@@ -516,6 +526,8 @@ if __name__ == "__main__":
                 g = self.addgen()
                 g.val = x
 
+            self.fitness()
+
     class MRand (Mutation):
         def __init__(self):
             Mutation.__init__(self)
@@ -530,10 +542,10 @@ if __name__ == "__main__":
 
 
 
-    min_x2 = Evolution(size = 100, iteration = 40, mutationtype = muRandom,
+    min_x2 = Evolution(size = 100, iteration = 25, mutationtype = muRandom,
                       generatemutation = 30, populationratemutation = 80,
                       ClassIndividual = X2,
-                      MutationsClass = [MRand], printlocalresult = True)
+                      MutationsClass = [Crossingover, MRand], printlocalresult = True)
     min_x2.init()
     min_x2.calc()
 
@@ -570,6 +582,8 @@ if __name__ == "__main__":
                 g = self.addgen()
                 g.val = 1 #random.randint(0,1)
 
+            self.fitness()
+
         def printresult(self, short):
             a1, a2 = 0, 0
             for i in xrange(self.count):
@@ -595,7 +609,7 @@ if __name__ == "__main__":
     arr = [random.randint(0, 50000) for x in xrange(0,10000)]
     partitionproblem = Evolution(size = 150, iteration = 20, mutationtype = muRandom,
                   generatemutation = 30, populationratemutation = 80, ClassIndividual = DiffArr,
-                  MutationsClass = [MRand], args = [arr])
+                  MutationsClass = [Crossingover, MRand], args = [arr])
 
     partitionproblem.init()
     partitionproblem.calc()

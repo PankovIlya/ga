@@ -49,12 +49,23 @@ class Way (ga.Individual):
             self[i].val = i 
 
         self.fitness()
-        CrossFide().mutate(self, 0)
+        CrossFide().mutate(self, 0, None)
 
-         
+class CrossingoverTSP (ga.Crossingover):
+    def __init__(self):
+            ga.Crossingover.__init__(self)
+            self.rate = 0.60
+    def after_mutate(self, children, res, population):
+        for child in children:
+            CrossFide().mutate(child, 0, population)     
 
 class ExchangeCity(ga.Mutation):
-    def mutate(self, individual, cnt):
+    def __init__(self):
+            ga.Mutation.__init__(self)
+            self.name = 'ExchangeCity'
+            self.rate = 1
+            
+    def mutate(self, individual, cnt, population):
         def change(idx1, idx2):
             idc = individual[idx2]._id
             individual[idx2]._id = individual[idx1]._id
@@ -67,11 +78,16 @@ class ExchangeCity(ga.Mutation):
             change(idx1, idx2)
 
         if individual.fitness() < fx*individual.back:
-            CrossFide().mutate(individual, cnt)
+            CrossFide().mutate(individual, cnt, population)
 
 
 class MoveCity(ga.Mutation):
-    def mutate(self, individual, cnt):
+    def __init__(self):
+            ga.Mutation.__init__(self)
+            self.name = 'MoveCity'
+            self.rate = 0.8
+   
+    def mutate(self, individual, cnt, population):
         fx = individual.fx
         for _ in xrange(cnt):
             idx1 = random.randint(0, individual.count-1)
@@ -89,11 +105,11 @@ class MoveCity(ga.Mutation):
             individual[idx1]._id = id2
 
         if individual.fitness() < fx*individual.back:
-            CrossFide().mutate(individual, cnt)
+            CrossFide().mutate(individual, cnt, population)
 
 
 class CrossFide(ga.Mutation):
-    def mutate(self, individual, cnt):
+    def mutate(self, individual, cnt, population):
         def change(idx1, idx2):
             idc = individual[idx2]._id
             individual[idx2]._id = individual[idx1]._id
@@ -115,36 +131,46 @@ class CrossFide(ga.Mutation):
                     
 
 class Gready(ga.Mutation):
-    def mutate(self, individual, cnt):
+    def __init__(self):
+            ga.Mutation.__init__(self)
+            self.name = 'Gready'
+            self.rate = 0.5
+            
+    def mutate(self, individual, cnt, population):
+        cities = {}
+        
         def changeid(idx1, idx2):
             idc = individual[idx2]._id
             individual[idx2]._id = individual[idx1]._id
             individual[idx1]._id = idc
 
         def changeval(idx1, idx2):
-            val = citys[idx2]
-            citys[idx2].val = citys[idx1].val
-            citys[idx1].val = val
+            val1 = cities[idx1][0]
+            val2 = cities[idx2][0]
+            
+            cities[idx1] = [val2,1]
+            cities[idx2] = [val1,1]
 
         idx1 = random.randint(0, individual.count-2)
         idx2 = random.randint(idx1+1, individual.count-1)
 
         fx = individual.fx
-        citys = {}
+
         for c in individual.dna:
-            citys[c.id] = c.val
+            cities[c.id] = [c.val,0]
             
         for idx in xrange(idx1, idx2):
-            idcity = individual[idx].id
-            nextcity = individual[idx+1].id
-            nearcity = individual.vertexs.near(idcity)
+            city_id = individual[idx].id
+            next_city_id = individual[idx+1].id
+            near_city_id = individual.vertexs.near(city_id, cities)
 
-            changeid(idx+1, citys[nearcity])
+            changeid(idx+1, cities[near_city_id][0])
+            changeval(next_city_id, near_city_id)
             
 
 
         if individual.fitness() < fx*individual.back:
-            CrossFide().mutate(individual, cnt)
+            Gready().mutate(individual, cnt, population)
 
 
 
@@ -157,7 +183,7 @@ class TSP( object ):
     def calc(self):
         self.tspga = ga.Evolution(size = 80, iteration = self.iteration, mutationtype = ga.muRandom,
                                   generatemutation = 4, populationratemutation = 100,
-                                  ClassIndividual = Way, MutationsClass = [ExchangeCity, MoveCity], #MoveCity
+                                  ClassIndividual = Way, MutationsClass = [CrossingoverTSP, ExchangeCity, MoveCity, Gready], #MoveCity
                                   args = [self.vertexs])
         self.tspga.init()
         self.tspga.calc()

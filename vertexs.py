@@ -112,9 +112,9 @@ class Vertexs (object):
         return False
 
 
-    def near(self, i):
+    def near(self, i, cities):
         jm = 0
         for j in xrange(self.count):
-            if self.distance[i][j] < self.distance[i][jm]:
+            if self.distance[i][j] < self.distance[i][jm] and cities[jm][1] == 0:
                 jm = j
         return jm
