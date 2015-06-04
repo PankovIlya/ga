@@ -116,23 +116,32 @@ class CrossFide(ga.Mutation):
 
 class Gready(ga.Mutation):
     def mutate(self, individual, cnt):
-        def change(idx1, idx2):
-            val = individual[idx2].val
-            individual[idx2].val = individual[idx1].val
-            individual[idx1].val = val
+        def changeid(idx1, idx2):
+            idc = individual[idx2]._id
+            individual[idx2]._id = individual[idx1]._id
+            individual[idx1]._id = idc
+
+        def changeval(idx1, idx2):
+            val = citys[idx2]
+            citys[idx2].val = citys[idx1].val
+            citys[idx1].val = val
 
         idx1 = random.randint(0, individual.count-2)
         idx2 = random.randint(idx1+1, individual.count-1)
 
         fx = individual.fx
-
+        citys = {}
+        for c in individual.dna:
+            citys[c.id] = c.val
+            
         for idx in xrange(idx1, idx2):
             idcity = individual[idx].id
             nextcity = individual[idx+1].id
             nearcity = individual.vertexs.near(idcity)
-            individual.ordid()
-            change(nextcity, nearcity)
-            individual.ordval()
+
+            changeid(idx+1, citys[nearcity])
+            
+
 
         if individual.fitness() < fx*individual.back:
             CrossFide().mutate(individual, cnt)
@@ -146,7 +155,7 @@ class TSP( object ):
         self.iteration = iteration
 
     def calc(self):
-        self.tspga = ga.Evolution(size = 50, iteration = self.iteration, mutationtype = ga.muRandom,
+        self.tspga = ga.Evolution(size = 80, iteration = self.iteration, mutationtype = ga.muRandom,
                                   generatemutation = 4, populationratemutation = 100,
                                   ClassIndividual = Way, MutationsClass = [ExchangeCity, MoveCity], #MoveCity
                                   args = [self.vertexs])

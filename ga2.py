@@ -124,8 +124,12 @@ class Individual (object):
 class Population (object):
     def __init__(self, populationsize = 100, bestprotected = True, opt_type = otMin,
                  ClsInd = None, args = [], calc_fitness = True,
+<<<<<<< HEAD
                  rate_procent = 0.15, best_population_rate = 0.15):
         self.populationsize = populationsize 
+=======
+                 rate_procent = 0.25, best_population_rate = 0.15):
+>>>>>>> 0d36ac0e271170be7584da65a63f2c454784443e
         self.bestprotected = bestprotected
         self.args = args
         self.optimisationtype = opt_type
@@ -265,7 +269,7 @@ class Population (object):
 
 class Mutation (object):
     def __init__(self):
-        self.rate = 0
+        self.rate = 0.0
         self.weight = 0
         self.name = ""
         self.advance = 0
@@ -297,13 +301,16 @@ class Mutations (object):
 
         all_w = 0
         for mut in self.mutations:
-            mut.weight = mut.advance*100/mut.total
+            if mut.total == 0:
+                mut.weight = 100
+            else:
+                mut.weight = mut.advance*100/mut.total
             all_w += mut.weight
 
         if all_w == 0:
             return
             
-        k = 1
+        k = 1.0
         for mut in self.mutations:
             mut.rate = mut.weight*k/all_w
             if mut.rate < 0.05:
@@ -326,9 +333,10 @@ class Mutations (object):
             return True
 
         if not check():
-            val = 1/self.count
-            for idx in xrange(self.count-1):
-                self[idx].rate = idx*val
+            val = 1.0/self.count
+            for idx in xrange(1, self.count):
+                self[idx-1].rate = idx*val
+                
 
             self[-1].rate = 1
                 
@@ -459,6 +467,8 @@ class Evolution (object):
             self.mutations.add(mCls())
 
         self.mutations.init()
+        print self.mutations
+        
 
         self.population.calc()
 

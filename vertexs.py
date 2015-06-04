@@ -60,7 +60,7 @@ class Vertexs (object):
         self.vertexlist.append(res)
         return res
 
-    def intersection(self, v11, v12, v21, v22):
+    def intersection2(self, v11, v12, v21, v22):
         def det (a, b, c, d):
             return a * d - b * c
 
@@ -85,6 +85,32 @@ class Vertexs (object):
                     if ((by1<=yi) and (by2>=yi)) or ((by1>=yi) and (by2<=yi)):
                         res = True
         return res
+
+    def intersection(self, v11, v12, v21, v22):
+        
+        ax1 = self[v11].lon;  ay1 = self[v11].lat;
+        ax2 = self[v12].lon;  ay2 = self[v12].lat;
+        bx1 = self[v21].lon;  by1 = self[v21].lat;
+        bx2 = self[v22].lon;  by2 = self[v22].lat;
+
+        def inside(a, b, c):
+            if (a > min(b, c)) and (a < max(b, c)):
+              return True
+            else:
+              return False
+
+        c =  (ay2 - ay1) / (ax1 - ax2+0.0000000001)
+        d =   ay2 - c*ax2
+        c1 = (by2 - by1) / (bx1 - bx2+0.0000000001)
+        d1 =  by2 - c1*bx2
+
+        if c <> c1:
+            x = (d1 - d) / (c - c1)
+            if inside(x, ax2, ax1) and inside(x, bx2, bx1):
+                return True
+
+        return False
+
 
     def near(self, i):
         jm = 0
