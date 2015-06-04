@@ -124,12 +124,8 @@ class Individual (object):
 class Population (object):
     def __init__(self, populationsize = 100, bestprotected = True, opt_type = otMin,
                  ClsInd = None, args = [], calc_fitness = True,
-<<<<<<< HEAD
-                 rate_procent = 0.15, best_population_rate = 0.15):
-        self.populationsize = populationsize 
-=======
                  rate_procent = 0.25, best_population_rate = 0.15):
->>>>>>> 0d36ac0e271170be7584da65a63f2c454784443e
+        self.populationsize = populationsize 
         self.bestprotected = bestprotected
         self.args = args
         self.optimisationtype = opt_type
@@ -366,18 +362,15 @@ class Mutations (object):
 
                 if mutationtype == muRandom:
                     cnt = random.randint(1, cnt)
-                    
-
-            
                 
             mutation.total += 1
             self.all_total += 1
 
             fx = population[idx].fx
 
-            mutation.mutate(population[idx], cnt, population)
+            res = mutation.mutate(population[idx], cnt, population)
 
-            if fx > population[idx].fx:
+            if res or fx > population[idx].fx:
                 mutation.advance += 1
                 self.all_advance += 1
 
@@ -390,9 +383,9 @@ class Crossingover (Mutation):
             self.childcount = 0
             self.population = None
 
-    def mutate(self, individual, cnt, parent):
-        self.childcount = cnt
-        self.population = parent
+    def mutate(self, individual, cnt, parents):
+        self.child_count = cnt
+        self.population = parents
 
         vparent1 = parents.parent()
 
@@ -403,11 +396,15 @@ class Crossingover (Mutation):
             i += 1
 
         if i == 100:
-            print '!!! warning !!! no parent for Crossingover ', parents.best_population_idx
+            print '!!!!!!!!!!!!!!!!!!!!! warning !!! no parent for Crossingover ', parents.best_population_idx
     
-        for child in self.fertilisation(vparent1, vparent2):
-            parents.add(child)    
-                
+        children = self.fertilisation(vparent1, vparent2)
+
+        for child in children:
+            parents.add(child)
+
+        if parents.selection(children) == 1 or parents.selection(children):
+            return 
  
     def fertilisation(self, parent1, parent2):
 
@@ -417,11 +414,10 @@ class Crossingover (Mutation):
             children.append(self.meiosis(self.population.conceiving(), parent1, parent2))
             children.append(self.meiosis(self.population.conceiving(), parent2, parent1))
 
-        children += [parent1.clone(), parent2.clone()] 
         self.population.rang(children)
         #print [child.fx for child in children]
 
-        return children[:self.child_count*2]
+        return children
 
     def meiosis(self, child, parent1, parent2):
 
