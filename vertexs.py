@@ -60,7 +60,7 @@ class Vertexs (object):
         self.vertexlist.append(res)
         return res
 
-    def intersection2(self, v11, v12, v21, v22):
+    def intersection(self, v11, v12, v21, v22):
         def det (a, b, c, d):
             return a * d - b * c
 
@@ -86,7 +86,7 @@ class Vertexs (object):
                         res = True
         return res
 
-    def intersection(self, v11, v12, v21, v22):
+    def intersection2(self, v11, v12, v21, v22):
         
         ax1 = self[v11].lon;  ay1 = self[v11].lat;
         ax2 = self[v12].lon;  ay2 = self[v12].lat;

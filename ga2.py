@@ -370,9 +370,12 @@ class Mutations (object):
 
             res = mutation.mutate(population[idx], cnt, population)
 
-            if res or fx > population[idx].fx:
+            if fx > population[idx].fx:
                 mutation.advance += 1
                 self.all_advance += 1
+            elif res:
+                mutation.advance += res
+                self.all_advance += res
 
         self.calc_info()
 
@@ -384,6 +387,7 @@ class Crossingover (Mutation):
             self.population = None
 
     def mutate(self, individual, cnt, parents):
+        res = 0
         self.child_count = cnt
         self.population = parents
 
@@ -396,15 +400,20 @@ class Crossingover (Mutation):
             i += 1
 
         if i == 100:
+            return res
             print '!!!!!!!!!!!!!!!!!!!!! warning !!! no parent for Crossingover ', parents.best_population_idx
     
         children = self.fertilisation(vparent1, vparent2)
 
         for child in children:
             parents.add(child)
+            if parents.selection(vparent1, child) == 1 \
+                or  parents.selection(vparent2, child) == 1:
+                res += 1
 
-        if parents.selection(children) == 1 or parents.selection(children):
-            return 
+        return res
+
+         
  
     def fertilisation(self, parent1, parent2):
 
@@ -417,7 +426,7 @@ class Crossingover (Mutation):
         self.population.rang(children)
         #print [child.fx for child in children]
 
-        return children
+        return children[:2]
 
     def meiosis(self, child, parent1, parent2):
 
