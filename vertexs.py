@@ -51,7 +51,7 @@ class Vertexs (object):
                 if i <> j:
                     a.append(self.foocalcmatrix(self[i], self[j]))
                 else:
-                    a.append(2000000000)
+                    a.append(float('inf'))
             self.distance.append(a)
 
     def add(self):
@@ -60,7 +60,7 @@ class Vertexs (object):
         self.vertexlist.append(res)
         return res
 
-    def intersection(self, v11, v12, v21, v22):
+    def intersection2(self, v11, v12, v21, v22):
         def det (a, b, c, d):
             return a * d - b * c
 
@@ -86,7 +86,7 @@ class Vertexs (object):
                         res = True
         return res
 
-    def intersection2(self, v11, v12, v21, v22):
+    def intersection(self, v11, v12, v21, v22):
         
         ax1 = self[v11].lon;  ay1 = self[v11].lat;
         ax2 = self[v12].lon;  ay2 = self[v12].lat;
@@ -109,12 +109,10 @@ class Vertexs (object):
             if inside(x, ax2, ax1) and inside(x, bx2, bx1):
                 return True
 
-        return False
-
-
     def near(self, i, cities):
         jm = 0
         for j in xrange(self.count):
-            if self.distance[i][j] < self.distance[i][jm] and cities[jm][1] == 0:
+            #print i, j, jm, self.distance[i][j] , self.distance[i][jm]
+            if i != j and self.distance[i][j] < self.distance[i][jm] and cities[j][1] == 0:
                 jm = j
         return jm

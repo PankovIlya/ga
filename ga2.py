@@ -136,8 +136,8 @@ class Population (object):
         self.calc_fitness = calc_fitness
         self.success_list = []
         self.individuals = []
-        self.min =  214748364
-        self.max = -214748364
+        self.min = float('inf')
+        self.max = -float('inf')
         self.best = None
         self.sumx = 0
         self.sumfx = 0
@@ -271,6 +271,7 @@ class Mutation (object):
         self.name = ""
         self.advance = 0
         self.total = 0
+
     def mutate(self, individual, cnt, population):
         raise Exception('Abstract method')
 
@@ -280,7 +281,14 @@ class Mutations (object):
         self.mutations = []
         self.all_total = 0
         self.all_advance = 0
-        self.childcount = childcount 
+        self.srate = 0
+        self.childcount = childcount
+
+    def get_by_name(self, name):
+        for mut in self.mutations:
+            if mut.name == name:
+                return mut
+        return None
 
     def __getitem__(self, idx):
         return self.mutations[idx]
@@ -299,9 +307,9 @@ class Mutations (object):
         all_w = 0
         for mut in self.mutations:
             if mut.total == 0:
-                mut.weight = 100
+                mut.weight = 100.0
             else:
-                mut.weight = mut.advance*100/mut.total
+                mut.weight = mut.advance*100.0/mut.total
             all_w += mut.weight
 
         if all_w == 0:
@@ -309,16 +317,16 @@ class Mutations (object):
             
         k = 1.0
         for mut in self.mutations:
-            mut.rate = mut.weight*k/all_w
+            mut.rate = mut.weight*k*1.0/all_w
             if mut.rate < 0.05:
                 mut.rate = 0.05
                 k -= mut.rate
                 all_w -= mut.weight
 
-        rate = 0
+        self.srate = 0
         for mut in self.mutations:
-            rate += mut.rate
-            mut.rate = rate
+            self.srate += mut.rate
+            mut.rate = self.srate
                 
        
         
@@ -340,7 +348,7 @@ class Mutations (object):
     count = property(lambda self: len(self.mutations))
 
     def get_mutation(self):
-        val_m = random.random()
+        val_m = random.random()*self.srate
         #print [mut.rate for mut in self.mutations]
         for mut in self.mutations:
             if val_m < mut.rate:
@@ -482,7 +490,7 @@ class Evolution (object):
             self.mutations.add(mCls())
 
         self.mutations.init()
-        print self.mutations
+        #print self.mutations
         
 
         self.population.calc()
@@ -495,7 +503,8 @@ class Evolution (object):
         for i in xrange(self.iteration):
             self.anthropogeny()
             if self.printlocalresult:
-                print 'population', i, ' best ', self.population.best
+                #print "\r population {0}  best {1}".format(i, self.population.best)
+                print self.population.best
                         
             
     def anthropogeny(self):
@@ -505,7 +514,7 @@ class Evolution (object):
 
     def mutation(self):
         self.mutations.mutagenesis(self.population, self.mutationtype, self.populationratemutation, self.generatemutation)
-        print self.mutations
+        #print self.mutations
 
     def printbest(self):
         print self.population.best
@@ -549,6 +558,144 @@ if __name__ == "__main__":
     min_x2.init()
     min_x2.calc()
 
+    print '*** string searsh ****'
+
+    alphabet = list('MSHBqwertyuiopasdfghjklzxcvbnm.,!') + [' ']
+
+    def levenshtein_distance(seq_x, seq_y):
+        """ compute global or local alignment matrix """
+
+        cam = [0]
+        current = [0]
+
+                
+        if seq_x < seq_y:
+                seq_x, seq_y = seq_y, seq_x 
+
+        lx, ly = len(seq_x), len(seq_y)
+
+        for j in xrange(1, ly+1):
+                cam.append(j)
+                current.append(0)
+
+        change = lambda a, b:  0 if a == b else 1
+
+        for i in xrange(1, lx+1):
+                current[0] = i
+                for j in xrange(1, ly+1):
+                        cxy = cam[j-1] + change(seq_x[i-1], seq_y[j-1]) 
+                        cx_ = current[j-1] + 2
+                        c_y = cam[j] + 2
+
+                        current[j] = min([cxy, cx_, c_y])
+
+                cam = [x for x in current]
+                        
+        return cam[ly]
+
+    class Sstting (Individual):
+        def __init__(self, *args):
+            Individual.__init__(self, *args)
+            self.sword = args[0]
+                               
+
+        def __str__(self):
+            return self.printresult(True)
+            return Individual.__str__(self)
+            
+                
+        def calcx(self):
+            word = ''
+            for  s in self.dna:
+                word += s.val
+
+            return levenshtein_distance(self.sword, word)
+            
+        foofx = lambda self, x: 5**x
+
+        def randomcreate(self):
+            n = len(alphabet)
+            for i in xrange(len(self.sword)):
+                g = self.addgen()
+                j = random.randint(0,n-1)
+                g.val = alphabet[j]
+
+        def printresult(self, short):
+            res = ''
+            for s in self.dna:
+                res += str(s.val)
+
+            return "\r message: {0}".format(res)
+
+
+    class MChange (Mutation):
+        def __init__(self):
+            Mutation.__init__(self)
+            self.name = 'Change'
+            
+        def mutate(self, individual, cnt, population):
+            n = len(alphabet)
+            for i in xrange(cnt):
+                idx = random.randint(0, individual.count-1)
+                j = random.randint(0,n-1)
+                individual[idx].val = alphabet[j]
+
+    class MDelIns (Mutation):
+        def __init__(self):
+            Mutation.__init__(self)
+            self.name = 'MDelIns'
+            
+        def mutate(self, individual, cnt, population):
+            n = len(alphabet)
+            for i in xrange(cnt):
+                idx1 = random.randint(0, individual.count-1)
+                idx2 = random.randint(0, individual.count-1)
+                val = individual[idx1].val    
+
+                for j in xrange(min(idx1, idx2), max(idx1, idx2)):    
+                    individual[j].val = individual[j+1].val    
+
+                individual[idx2].val = val
+
+    class MDel (Mutation):
+        def __init__(self):
+            Mutation.__init__(self)
+            self.name = 'MDel'
+            
+        def mutate(self, individual, cnt, population):
+            n = len(alphabet)
+            idx = random.randint(0, individual.count-1)
+            del individual.dna[idx]
+
+    class MIns (Mutation):
+        def __init__(self):
+            Mutation.__init__(self)
+            self.name = 'MIns'
+            
+        def mutate(self, individual, cnt, population):
+            n = len(alphabet)
+            g = individual.addgen()
+            j = random.randint(0,n-1)
+            g.val = alphabet[j]
+            individual.dna.append(g)
+
+
+    s = 'Marchelo teaches Savelys evolution biology. Happy Birthday!!!'
+    ss = Evolution(size = 1000, iteration = 90, mutationtype = muRandom,
+                   generatemutation = 25, populationratemutation = 80, ClassIndividual = Sstting,
+                   MutationsClass = [Crossingover, MChange, MDelIns, MDel, MIns], args = [s])
+
+    ss.init()
+    ss.calc()
+    print "It's more thins setting"
+    ss.populationsize = 5000
+    ss.generatemutation = 12
+    ss.iteration = 40
+    ss.generation()
+    ss.calc()
+
+    print 1/0
+   
     print '*** Partition Problem ***'
 
     class DiffArr (Individual):
@@ -606,7 +753,7 @@ if __name__ == "__main__":
                 print 'arr 2 ', b[:15] 
                 
                 
-    arr = [random.randint(0, 50000) for x in xrange(0,10000)]
+    arr = [random.randint(0, 5000) for x in xrange(0,1000)]
     partitionproblem = Evolution(size = 150, iteration = 20, mutationtype = muRandom,
                   generatemutation = 30, populationratemutation = 80, ClassIndividual = DiffArr,
                   MutationsClass = [Crossingover, MRand], args = [arr])
