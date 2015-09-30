@@ -6,12 +6,12 @@ def parse(filename):
     x = f.readline()
     while x:
         y = f.readline()
-        x = x.split('\n')[0]
-        y = y.split('\n',)[0]
+        x = x.rstrip('\n')
+        y = y.rstrip('\n')
         res += [[int(x), int(y)]]
         x = f.readline()
 
-    res = {"structure" : ["x", "y"], "cities": res}
+    res = {"structure" : ["x", "y"], "cities" : res}
     return res
 
 with open('testx.json', 'w') as outfile:
