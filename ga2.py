@@ -283,6 +283,7 @@ class Mutations (object):
         self.all_advance = 0
         self.srate = 0
         self.childcount = childcount
+        self.min_rate = 0.4
 
     def get_by_name(self, name):
         for mut in self.mutations:
@@ -318,8 +319,8 @@ class Mutations (object):
         k = 1.0
         for mut in self.mutations:
             mut.rate = mut.weight*k*1.0/all_w
-            if mut.rate < 0.05:
-                mut.rate = 0.05
+            if mut.rate < self.min_rate:
+                mut.rate = self.min_rate
                 k -= mut.rate
                 all_w -= mut.weight
 
@@ -503,8 +504,8 @@ class Evolution (object):
         for i in xrange(self.iteration):
             self.anthropogeny()
             if self.printlocalresult:
-                #print "\r population {0}  best {1}".format(i, self.population.best)
-                print self.population.best
+                print "population {0}  best {1}".format(i, self.population.best)
+                #print self.population.best
                         
             
     def anthropogeny(self):
@@ -514,7 +515,7 @@ class Evolution (object):
 
     def mutation(self):
         self.mutations.mutagenesis(self.population, self.mutationtype, self.populationratemutation, self.generatemutation)
-        #print self.mutations
+        print self.mutations
 
     def printbest(self):
         print self.population.best

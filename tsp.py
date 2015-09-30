@@ -25,6 +25,10 @@ class Way (ga.Individual):
         self.ordval()
         for i in xrange(self.count):
             self[i].val = i
+
+    def renum2(self):
+        for i in xrange(self.count):
+            self[i].val = i
             
     def calcx(self):
         self.renum()
@@ -34,7 +38,7 @@ class Way (ga.Individual):
         sumx += self.vertexs.distance[self[-1].id][self[0].id]
         return sumx
     
-    foofx = lambda self, x: x
+    foofx = lambda self, x: (x-2200)**2
 
     def randomcreate(self):
         cnt = self.vertexs.count
@@ -50,6 +54,7 @@ class Way (ga.Individual):
 
         self.fitness()
         CrossFide().mutate(self, 0, None)
+        
 
 class CrossingoverTSP (ga.Crossingover):
     def __init__(self):
@@ -113,18 +118,27 @@ class CrossFide(ga.Mutation):
             individual[idx2]._id, individual[idx1]._id = individual[idx1]._id, individual[idx2]._id
             
         #start = random.randint(0, individual.count - cnt - 1)
-        for i in xrange(0, individual.count - 2):
-            for j in xrange(i+2, individual.count):
+        res, i = True, 0        
+        while i < individual.count - 2:
+            j = i + 2
+            while j < individual.count:
                 if individual.vertexs.intersection(individual[i].id,
                                                    individual[i+1].id,
                                                    individual[j].id,
                                                    individual[(j+1) % (individual.count)].id):
                     fx, x = individual.fx, individual.x
-                    change(i+1, j)
+                    change(i+1, j)    
                     if individual.fitness() > fx:
                         change(i+1, j)
-                        individual.fx = x
-
+                        old = individual.dna
+                        base = individual[:]
+                        lst = base[i+1 : j+1]
+                        individual.dna = base[:i+1] + lst[::-1] + base[j+1:]
+                        individual.renum2()
+                        if individual.fitness() > fx:
+                            individual.dna = old
+                j += 1
+            i +=1
                     
 
 class Gready(ga.Mutation):
@@ -192,7 +206,7 @@ class TSP( object ):
         im = Image.new("RGB", (512, 512), "white")
         draw = ImageDraw.Draw(im)
         for i in xrange(best.count-1):
-            #draw.text(i, (self.vertexs[best[i].id].lon, self.vertexs[best[i].id].lat-2), (0,0,0))
+            #draw.text(i, (self.vertexs[best[i].id].lon, self.vertexs[best[i].id].lat-2), 'black')
             draw.ellipse((self.vertexs[best[i].id].lon-2, self.vertexs[best[i].id].lat-2,
                           self.vertexs[best[i].id].lon+2, self.vertexs[best[i].id].lat+2),
                           (0,0,0))
@@ -200,8 +214,12 @@ class TSP( object ):
             draw.line((self.vertexs[best[i].id].lon, self.vertexs[best[i].id].lat,
                        self.vertexs[best[i+1].id].lon, self.vertexs[best[i+1].id].lat),(0,0,0))
 
-        #draw.line((self.vertexs[best[-1].id].lon, self.vertexs[best[-1].id].lat,
-        #              self.vertexs[best[0].id].lon, self.vertexs[best[0].id].lat), (0,0,0))
+        draw.ellipse((self.vertexs[best[-1].id].lon-2, self.vertexs[best[-1].id].lat-2,
+                      self.vertexs[best[-1].id].lon+2, self.vertexs[best[-1].id].lat+2),
+                      (0,0,0))
+
+        draw.line((self.vertexs[best[-1].id].lon, self.vertexs[best[-1].id].lat,
+                   self.vertexs[best[0].id].lon, self.vertexs[best[0].id].lat), (0,0,0))
 
         im.save("result.bmp", "BMP")
 
@@ -227,9 +245,9 @@ if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                                   math.pow((v1.lat - v2.lat),2), 0.5))
-    tsp = TSP(5000, foostraightlen)
+    tsp = TSP(30, foostraightlen)
     tsp.load('points.json')
-    #print tsp.vertexs.vertexlist
+    #print tspvertexs.vertexlist
     #print tsp.vertexs.distance[1][9]
 
     tsp.calc()
