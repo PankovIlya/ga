@@ -114,7 +114,7 @@ class Individual (object):
     def calcx(self):
         raise Exception('Absract method, return x')
 
-    def randomcreate(self):
+    def randomcreate(self, best=None):
          raise Exception('Absract method, fill DNA')
 
     def clone(self):
@@ -155,14 +155,16 @@ class Population (object):
         children.individuals += [self.best.clone()]
 
         return children
-
   
     def init(self):
         self.best = self.conceiving()
         self.add(self.best)
         self.best.randomcreate()
         self.best.fitness()
-        
+        self.after_best_create(self.best)
+
+    def after_best_create(self, best):
+        pass        
             
     def __getitem__(self, idx):
         return self.individuals[idx]
@@ -253,7 +255,7 @@ class Population (object):
     def generation(self, size):
         for _ in xrange(self.count, size):
             ind = self.conceiving()
-            ind.randomcreate()
+            ind.randomcreate(self.best)
             ind.fitness()
             self.individuals.append(ind)
         self.best_population_idx = self.count - 1  
@@ -283,7 +285,7 @@ class Mutations (object):
         self.all_advance = 0
         self.srate = 0
         self.childcount = childcount
-        self.min_rate = 0.4
+        self.min_rate = 0.2
 
     def get_by_name(self, name):
         for mut in self.mutations:
@@ -530,7 +532,7 @@ if __name__ == "__main__":
             
         foofx = lambda self, x: x**2
 
-        def randomcreate(self):
+        def randomcreate(self, best=None):
             for i in xrange(32):
                 x = random.randint(0,1)
                 g = self.addgen()
@@ -558,6 +560,80 @@ if __name__ == "__main__":
                       MutationsClass = [Crossingover, MRand], printlocalresult = True)
     min_x2.init()
     min_x2.calc()
+
+   
+    print '*** Partition Problem ***'
+
+    class DiffArr (Individual):
+        def __init__(self, *args):
+            Individual.__init__(self, *args)
+            self.arr = args[0]
+                               
+
+        def __str__(self):
+            self.printresult(True)
+            return Individual.__str__(self)
+            
+                
+        def calcx(self):
+            sumx = 0
+            try:
+                for i in xrange(self.count):
+                    if self[i].val == 0:
+                        sumx += self.arr[self[i].id]
+                    else:
+                        sumx -= self.arr[self[i].id]
+                return sumx
+            except:
+                print self[i].id, len(self.arr)
+            
+
+        foofx = lambda self, x: x**2
+
+        def randomcreate(self, best=None):
+            for i in xrange(len(self.arr)):
+                g = self.addgen()
+                g.val = 1 #random.randint(0,1)
+
+            self.fitness()
+
+        def printresult(self, short):
+            a1, a2 = 0, 0
+            for i in xrange(self.count):
+                if self[i].val == 0:
+                    a1 += 1
+                else:
+                    a2 += 1
+            print 'Length arr1', a1, 'arr2', a2
+
+            if not short:
+                a, b = [], []
+                for i in xrange(self.count):
+                    if self[i].val == 0:
+                        a.append(self.arr[self[i].id])
+                    else:
+                        b.append(self.arr[self[i].id])
+                print 'Delta Arr ', sum(a) - sum(b), ' Sum Arr1', sum(a) , 'Sum Arr2', sum(b), 
+                a.sort(); b.sort()    
+                print 'arr 1 ', a[:15]
+                print 'arr 2 ', b[:15] 
+                
+                
+    arr = [random.randint(0, 5000) for x in xrange(0,1000)]
+    partitionproblem = Evolution(size = 150, iteration = 20, mutationtype = muRandom,
+                  generatemutation = 30, populationratemutation = 80, ClassIndividual = DiffArr,
+                  MutationsClass = [Crossingover, MRand], args = [arr])
+
+    partitionproblem.init()
+    partitionproblem.calc()
+    partitionproblem.population.best.printresult(False)
+    print "It's more thins setting"
+    partitionproblem.populationsize = 180
+    partitionproblem.generatemutation = 0.1
+    partitionproblem.iteration = 20
+    partitionproblem.generation()
+    partitionproblem.calc()
+    partitionproblem.population.best.printresult(False)
 
     print '*** string searsh ****'
 
@@ -614,7 +690,7 @@ if __name__ == "__main__":
             
         foofx = lambda self, x: 5**x
 
-        def randomcreate(self):
+        def randomcreate(self, best=None):
             n = len(alphabet)
             for i in xrange(len(self.sword)):
                 g = self.addgen()
@@ -696,79 +772,6 @@ if __name__ == "__main__":
     ss.calc()
 
     print 1/0
-   
-    print '*** Partition Problem ***'
-
-    class DiffArr (Individual):
-        def __init__(self, *args):
-            Individual.__init__(self, *args)
-            self.arr = args[0]
-                               
-
-        def __str__(self):
-            self.printresult(True)
-            return Individual.__str__(self)
-            
-                
-        def calcx(self):
-            sumx = 0
-            try:
-                for i in xrange(self.count):
-                    if self[i].val == 0:
-                        sumx += self.arr[self[i].id]
-                    else:
-                        sumx -= self.arr[self[i].id]
-                return sumx
-            except:
-                print self[i].id, len(self.arr)
-            
-
-        foofx = lambda self, x: x**2
-
-        def randomcreate(self):
-            for i in xrange(len(self.arr)):
-                g = self.addgen()
-                g.val = 1 #random.randint(0,1)
-
-            self.fitness()
-
-        def printresult(self, short):
-            a1, a2 = 0, 0
-            for i in xrange(self.count):
-                if self[i].val == 0:
-                    a1 += 1
-                else:
-                    a2 += 1
-            print 'Length arr1', a1, 'arr2', a2
-
-            if not short:
-                a, b = [], []
-                for i in xrange(self.count):
-                    if self[i].val == 0:
-                        a.append(self.arr[self[i].id])
-                    else:
-                        b.append(self.arr[self[i].id])
-                print 'Delta Arr ', sum(a) - sum(b), ' Sum Arr1', sum(a) , 'Sum Arr2', sum(b), 
-                a.sort(); b.sort()    
-                print 'arr 1 ', a[:15]
-                print 'arr 2 ', b[:15] 
-                
-                
-    arr = [random.randint(0, 5000) for x in xrange(0,1000)]
-    partitionproblem = Evolution(size = 150, iteration = 20, mutationtype = muRandom,
-                  generatemutation = 30, populationratemutation = 80, ClassIndividual = DiffArr,
-                  MutationsClass = [Crossingover, MRand], args = [arr])
-
-    partitionproblem.init()
-    partitionproblem.calc()
-    partitionproblem.population.best.printresult(False)
-    print "It's more thins setting"
-    partitionproblem.populationsize = 180
-    partitionproblem.generatemutation = 0.1
-    partitionproblem.iteration = 20
-    partitionproblem.generation()
-    partitionproblem.calc()
-    partitionproblem.population.best.printresult(False)
     
     
     

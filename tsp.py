@@ -40,21 +40,23 @@ class Way (ga.Individual):
     
     foofx = lambda self, x: (x-2200)**2
 
-    def randomcreate(self):
-        cnt = self.vertexs.count
-        if cnt < 2:
-            raise Exception('City count < 2!')
-        for i in xrange(cnt):
-            g = self.addgen()
+    def randomcreate(self, best=None):
+        if best:
+            self.dna = best.clone().dna
+        else:
+            cnt = self.vertexs.count
+            if cnt < 2:
+                raise Exception('City count < 2!')
+            for i in xrange(cnt):
+                g = self.addgen()
 
-        random.shuffle(self.dna)
+            random.shuffle(self.dna)
 
-        for i in xrange(cnt):
-            self[i].val = i 
+            for i in xrange(cnt):
+                self[i].val = i 
 
         self.fitness()
-        CrossFide().mutate(self, 0, None)
-        
+                
 
 class CrossingoverTSP (ga.Crossingover):
     def __init__(self):
@@ -190,11 +192,16 @@ class TSP( object ):
         self.tspga = None
         self.iteration = iteration
 
+    def after_best_create(self, best):
+        CrossFide().mutate(best, 0, None)
+
     def calc(self):
         self.tspga = ga.Evolution(size = 180, iteration = self.iteration, mutationtype = ga.muRandom,
                                   generatemutation = 20, populationratemutation = 90,
                                   ClassIndividual = Way, MutationsClass = [CrossingoverTSP, ExchangeCity, MoveCity, Gready], #MoveCity
                                   args = [self.vertexs])
+
+        self.tspga.after_best_create = self.after_best_create
         self.tspga.init()
         self.tspga.calc()
         best = self.tspga.population.best
@@ -246,7 +253,7 @@ if __name__ == "__main__":
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                                   math.pow((v1.lat - v2.lat),2), 0.5))
     tsp = TSP(30, foostraightlen)
-    tsp.load('points.json')
+    tsp.load('testx.json')
     #print tspvertexs.vertexlist
     #print tsp.vertexs.distance[1][9]
 
