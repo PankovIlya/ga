@@ -42,6 +42,12 @@ class Vertexs (object):
 
     def __getitem__(self, i):
         return self.vertexlist[i]
+
+    def __str__(self):
+        for row in self.distance:
+            print row
+
+        return 'Matrix'
         
     
     def calcmatrix(self):
@@ -110,9 +116,9 @@ class Vertexs (object):
                 return True
 
     def near(self, i, cities):
-        jm = 0
-        for j in xrange(self.count):
-            #print i, j, jm, self.distance[i][j] , self.distance[i][jm]
-            if i != j and self.distance[i][j] < self.distance[i][jm] and cities[j][1] == 0:
-                jm = j
+        jm = -1
+        lenij = float('inf')
+        for j in xrange(0, len(self.distance[i])):
+            if i != j and cities[j][1] == 0 and lenij > self.distance[i][j]:
+                jm, lenij = j, self.distance[i][j]
         return jm

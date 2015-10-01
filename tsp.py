@@ -38,9 +38,10 @@ class Way (ga.Individual):
         sumx += self.vertexs.distance[self[-1].id][self[0].id]
         return sumx
     
-    foofx = lambda self, x: (x-2200)**2
+    foofx = lambda self, x: x
 
     def randomcreate(self, best=None):
+        best = None
         if best:
             self.dna = best.clone().dna
         else:
@@ -56,6 +57,7 @@ class Way (ga.Individual):
                 self[i].val = i 
 
         self.fitness()
+        Gready().mutate(self, -1, None)
                 
 
 class CrossingoverTSP (ga.Crossingover):
@@ -159,27 +161,35 @@ class Gready(ga.Mutation):
         def changeval(idx1, idx2):
             cities[idx1][0], cities[idx2][0] = cities[idx2][0], cities[idx1][0]
 
-        idx1 = random.randint(0, individual.count-2)
-        idx2 = random.randint(idx1+1, individual.count-1)
+        #print [[g.id, g.val]  for g in individual.dna]
 
-        fx = individual.fx
+        if cnt == -1:
+            idx1, idx2 = 0, individual.count -1
+        else:   
+            idx1 = random.randint(0, individual.count-2)
+            idx2 = random.randint(idx1+1, individual.count-1)
+
+        fx = individual.fitness()
 
         for c in individual.dna:
             cities[c.id] = [c.val,0]
             
         for idx in xrange(idx1, idx2):
             city_id = individual[idx].id
-            next_city_id = individual[idx+1].id
+            next_id = individual[idx+1].id
+            cities[city_id][1] = 1
             near_city_id = individual.vertexs.near(city_id, cities)
-            #print city_id, next_city_id, near_city_id
-            changeid(idx+1, cities[near_city_id][0])
-            changeval(next_city_id, near_city_id)
-            check = individual[idx+1]
-            assert(check.val, cities[check.id][0])
-            check = individual[cities[near_city_id][0]]
-            assert(check.val, cities[check.id][0])
+            if near_city_id > 0:
+                cities[near_city_id][1] = 1
+                idx2 = cities[near_city_id][0]
+                #print city_id, near_city_id, idx2
+                cities[next_id][0] = idx2
+                cities[near_city_id][0] = idx+1                
+                changeid(idx+1, idx2)
+                #print [[g.id, g.val]  for g in individual.dna]
+                #print [[idx, cities[idx]] for idx in xrange(len(cities))]
             
-
+        
         #print "result", individual.fitness(), fx
         if individual.fitness() < fx*individual.back:
             CrossFide().mutate(individual, cnt, population)
@@ -247,13 +257,14 @@ class TSP( object ):
             v.lon, v.lat = c[0], c[1]
         f.close()
         self.vertexs.calcmatrix()
+        #print self.vertexs
 
 if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
-                                                  math.pow((v1.lat - v2.lat),2), 0.5))
+                                                 math.pow((v1.lat - v2.lat),2), 0.5))
     tsp = TSP(30, foostraightlen)
-    tsp.load('testx.json')
+    tsp.load('testt.json')
     #print tspvertexs.vertexlist
     #print tsp.vertexs.distance[1][9]
 
