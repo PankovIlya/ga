@@ -117,14 +117,10 @@ class MoveCity(ga.Mutation):
         idx2 = rand.randint(0, individual.count-1)
 
         idx1, idx2 = min(idx1, idx2), max(idx1, idx2)
+        id1 = individual[idx1]
 
-            
-        id1 = individual[idx1]._id
-
-        for i in xrange(idx1, idx2):
-            individual[i]._id = individual[i+1]._id
-                    
-        individual[idx2]._id = id1
+        individual.dna = individual.dna[:idx1] + individual.dna[idx1+1:idx2+1] + \
+                         [id1] + individual.dna[idx2+1:] 
 
         if individual.fitness() < fx*individual.back:
             CrossFide().mutate(individual, cnt, population)
@@ -163,10 +159,10 @@ class CrossFide(ga.Mutation):
                         individual.dna = base[:i+1] + lst[::-1] + base[j+1:]
                         individual.renum2()
                         individual.fitness()
-##                        if individual.fitness() > fx:
-##                            #print 'aaa', individual.fx
-##                            individual.dna = old
-##                            individual.fitness()
+                        if individual.fitness() > fx:
+                            #print 'aaa', individual.fx
+                            individual.dna = old
+                            individual.fitness()
                             #print 'hey', individual.fitness()
                 j += 1
             i +=1
@@ -192,7 +188,7 @@ class Gready(ga.Mutation):
 
         #print [[g.id, g.val]  for g in individual.dna]
 
-        cnt = -1
+        #cnt = -1
 
         if cnt == -1:
             idx1, idx2 = 0, individual.count -1
@@ -211,8 +207,8 @@ class Gready(ga.Mutation):
             cities[city_id][1] = 1
             near_city_id = individual.vertexs.near(city_id, cities)
             if near_city_id > 0:
-                cities[near_city_id][1] = [idx+1, 1]
                 idx2 = cities[near_city_id][0]
+                cities[near_city_id] = [idx+1, 1]
                 #print city_id, near_city_id, idx2
                 cities[next_id][0] = idx2
                 changeid(idx+1, idx2)
@@ -296,8 +292,8 @@ if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                                  math.pow((v1.lat - v2.lat),2), 0.5))
-    tsp = TSP(1000, foostraightlen)
-    tsp.load('testt.json')
+    tsp = TSP(2000, foostraightlen)
+    tsp.load('testc.json')
     #print tspvertxs.vertexlist
     #print tsp.vertexs.distance[1][9]
 
