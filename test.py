@@ -28,3 +28,5 @@ print arr
            
 print "save"
 
+lst = [1,2,3,4]
+print lst[None:None]

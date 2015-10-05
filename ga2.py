@@ -423,11 +423,11 @@ class Crossingover (Mutation):
         children = self.fertilisation(vparent1, vparent2)
 
         for child in children:
-            parents.add(child)
             #print child.fx, vparent1.fx,  vparent2.fx
             #print parents.selection(vparent1, child), parents.selection(vparent2, child)
             if parents.selection(vparent1, child) == 1 \
                 or  parents.selection(vparent2, child) == 1:
+                parents.add(child)
                 res += 1
 
         self.after_mutate(children, res, parents)

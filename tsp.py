@@ -15,6 +15,14 @@ class Way (ga.Individual):
 ##            print g.id, g.val
         return ga.Individual.__str__(self)
 
+    def wslice(self, n, m):
+        dna = []
+        for itm in self.dna[n:m]:
+            gene = ga.Gene()
+            gene._id, gene.val = itm.id, itm.val
+            dna += [gene]
+        return dna
+
 
     def printbest(self):
         for g in self.dna:
@@ -58,15 +66,8 @@ class Way (ga.Individual):
 
         self.fitness()
         Gready().mutate(self, -1, None)
+        #CrossFide().mutate(self, -1, None)
                 
-
-class CrossingoverTSP (ga.Crossingover):
-    def __init__(self):
-            ga.Crossingover.__init__(self)
-            self.rate = 0.60
-    def after_mutate(self, children, res, population):
-        for child in children:
-            CrossFide().mutate(child, 0, population)     
 
 class ExchangeCity(ga.Mutation):
     def __init__(self):
@@ -92,7 +93,7 @@ class MoveCity(ga.Mutation):
     def __init__(self):
             ga.Mutation.__init__(self)
             self.name = 'MoveCity'
-            self.rate = 0.8
+            self.rate = 0.4
    
     def mutate(self, individual, cnt, population):
         fx = individual.fx
@@ -122,26 +123,43 @@ class CrossFide(ga.Mutation):
             individual[idx2]._id, individual[idx1]._id = individual[idx1]._id, individual[idx2]._id
             
         #start = random.randint(0, individual.count - cnt - 1)
-        res, i = True, 0        
-        while i < individual.count - 2:
-            j = i + 2
-            while j < individual.count:
+        res, i = True, 0
+
+        if cnt == -1:
+            i = 0
+            n = individual.count
+        else:
+            i = random.randint(0, individual.count-1)
+            n = random.randint(i+1, individual.count)
+
+        
+        while i < n:
+            j = (i + 1) % (individual.count)
+            k =  (j + 1) % (individual.count)
+            while k < individual.count:
+                l =  (k + 1) % (individual.count)
                 if individual.vertexs.intersection(individual[i].id,
-                                                   individual[i+1].id,
                                                    individual[j].id,
-                                                   individual[(j+1) % (individual.count)].id):
+                                                   individual[k].id,
+                                                   individual[l].id):
                     fx, x = individual.fx, individual.x
-                    change(i+1, j)    
-                    if individual.fitness() > fx:
-                        change(i+1, j)
-                        old = individual.dna
-                        base = individual[:]
-                        lst = base[i+1 : j+1]
-                        individual.dna = base[:i+1] + lst[::-1] + base[j+1:]
+                    change(j, k)    
+                    if individual.fitness() > fx*1.02:
+                        change(j, k)
+                        old = individual.wslice(None, None)
+                        base = individual.wslice(None, None)
+                        if j > l:
+                            lst = base[j:] + base[:l]
+                            individual.dna = base[l:j] + lst[::-1]
+                        else:   
+                            lst = base[j : l]
+                            individual.dna = base[:j] + lst[::-1] + base[l:]
+                        
                         individual.renum2()
-                        if individual.fitness() > fx:
+                        if individual.fitness() > fx*1.05:
                             individual.dna = old
-                j += 1
+                            individual.fitness()
+                k += 1
             i +=1
                     
 
@@ -149,7 +167,7 @@ class Gready(ga.Mutation):
     def __init__(self):
             ga.Mutation.__init__(self)
             self.name = 'Gready'
-            self.rate = 1.0
+            self.rate = 0.7
             
     def mutate(self, individual, cnt, population):
         cities = {}
@@ -180,11 +198,10 @@ class Gready(ga.Mutation):
             cities[city_id][1] = 1
             near_city_id = individual.vertexs.near(city_id, cities)
             if near_city_id > 0:
-                cities[near_city_id][1] = 1
+                cities[near_city_id] = [idx+1, 1]
                 idx2 = cities[near_city_id][0]
                 #print city_id, near_city_id, idx2
                 cities[next_id][0] = idx2
-                cities[near_city_id][0] = idx+1                
                 changeid(idx+1, idx2)
                 #print [[g.id, g.val]  for g in individual.dna]
                 #print [[idx, cities[idx]] for idx in xrange(len(cities))]
@@ -194,7 +211,13 @@ class Gready(ga.Mutation):
         if individual.fitness() < fx*individual.back:
             CrossFide().mutate(individual, cnt, population)
 
-
+class CrossingoverTSP (ga.Crossingover):
+    def __init__(self):
+            ga.Crossingover.__init__(self)
+            self.rate = 0.10
+    def after_mutate(self, children, res, population):
+        for child in children:
+            CrossFide().mutate(child, 0, population)   
 
 class TSP( object ):
     def __init__(self, iteration, lenfoo):
@@ -263,7 +286,7 @@ if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                                  math.pow((v1.lat - v2.lat),2), 0.5))
-    tsp = TSP(30, foostraightlen)
+    tsp = TSP(3000, foostraightlen)
     tsp.load('testt.json')
     #print tspvertexs.vertexlist
     #print tsp.vertexs.distance[1][9]
