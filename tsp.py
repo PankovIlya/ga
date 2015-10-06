@@ -1,7 +1,9 @@
-import ga2 as ga, vertexs, random
+import ga2 as ga, vertexs, random as rand, os
 
-from PIL import Image
+from PIL import Image 
 from PIL import ImageDraw
+from PIL import ImageFont
+
 
 class Way (ga.Individual):
 
@@ -15,6 +17,11 @@ class Way (ga.Individual):
 ##            print g.id, g.val
         return ga.Individual.__str__(self)
 
+
+    def printbest(self):
+        for g in self.dna:
+            print g.id, g.val
+
     def wslice(self, n, m):
         dna = []
         for itm in self.dna[n:m]:
@@ -23,10 +30,6 @@ class Way (ga.Individual):
             dna += [gene]
         return dna
 
-
-    def printbest(self):
-        for g in self.dna:
-            print g.id, g.val
 
             
     def renum(self):
@@ -49,6 +52,7 @@ class Way (ga.Individual):
     foofx = lambda self, x: x
 
     def randomcreate(self, best=None):
+        
         best = None
         if best:
             self.dna = best.clone().dna
@@ -59,7 +63,7 @@ class Way (ga.Individual):
             for i in xrange(cnt):
                 g = self.addgen()
 
-            random.shuffle(self.dna)
+            rand.shuffle(self.dna)
 
             for i in xrange(cnt):
                 self[i].val = i 
@@ -68,6 +72,14 @@ class Way (ga.Individual):
         Gready().mutate(self, -1, None)
         #CrossFide().mutate(self, -1, None)
                 
+
+class CrossingoverTSP (ga.Crossingover):
+    def __init__(self):
+            ga.Crossingover.__init__(self)
+            self.rate = 0.10
+    def after_mutate(self, children, res, population):
+        for child in children:
+            CrossFide().mutate(child, 0, population)     
 
 class ExchangeCity(ga.Mutation):
     def __init__(self):
@@ -79,11 +91,12 @@ class ExchangeCity(ga.Mutation):
         def change(idx1, idx2):
             individual[idx2]._id, individual[idx1]._id = individual[idx1]._id, individual[idx2]._id
             
-        fx = individual.fx
-        for _ in xrange(cnt):
-            idx1 = random.randint(0, individual.count-1)
-            idx2 = random.randint(0, individual.count-1)
-            change(idx1, idx2)
+                
+        fx = individual.fitness()
+        
+        idx1 = rand.randint(0, individual.count-1)
+        idx2 = rand.randint(0, individual.count-1)
+        change(idx1, idx2)
 
         if individual.fitness() < fx*individual.back:
             CrossFide().mutate(individual, cnt, population)
@@ -96,71 +109,65 @@ class MoveCity(ga.Mutation):
             self.rate = 0.4
    
     def mutate(self, individual, cnt, population):
-        fx = individual.fx
-        for _ in xrange(cnt):
-            idx1 = random.randint(0, individual.count-1)
-            idx2 = random.randint(0, individual.count-1)
 
-            if idx1 <= idx2:
-                k = -1
-            else:
-                k = 1
+        
+        fx = individual.fitness()
 
-            id2 = individual[idx2]._id
+        idx1 = rand.randint(0, individual.count-1)
+        idx2 = rand.randint(0, individual.count-1)
 
-            for i in xrange(idx2, idx1, k):
-                individual[i]._id = individual[i+k]._id
-                    
-            individual[idx1]._id = id2
+        idx1, idx2 = min(idx1, idx2), max(idx1, idx2)
+        id1 = individual[idx1]
+
+        individual.dna = individual.dna[:idx1] + individual.dna[idx1+1:idx2+1] + \
+                         [id1] + individual.dna[idx2+1:] 
 
         if individual.fitness() < fx*individual.back:
             CrossFide().mutate(individual, cnt, population)
 
 
 class CrossFide(ga.Mutation):
+    def __init__(self):
+        ga.Mutation.__init__(self)
+        self.name = 'CrossFide'
+        self.rate = 1.0
+
     def mutate(self, individual, cnt, population):
         def change(idx1, idx2):
             individual[idx2]._id, individual[idx1]._id = individual[idx1]._id, individual[idx2]._id
             
         #start = random.randint(0, individual.count - cnt - 1)
         res, i = True, 0
-
-        if cnt == -1:
-            i = 0
-            n = individual.count
-        else:
-            i = random.randint(0, individual.count-1)
-            n = random.randint(i+1, individual.count)
-
+        individual.fitness()
         
-        while i < n:
-            j = (i + 1) % (individual.count)
-            k =  (j + 1) % (individual.count)
-            while k < individual.count:
-                l =  (k + 1) % (individual.count)
+        while i < individual.count - 2:
+            j = i + 2
+            while j < individual.count:
                 if individual.vertexs.intersection(individual[i].id,
+                                                   individual[i+1].id,
                                                    individual[j].id,
-                                                   individual[k].id,
-                                                   individual[l].id):
-                    fx, x = individual.fx, individual.x
-                    change(j, k)    
-                    if individual.fitness() > fx*1.02:
-                        change(j, k)
-                        old = individual.wslice(None, None)
-                        base = individual.wslice(None, None)
-                        if j > l:
-                            lst = base[j:] + base[:l]
-                            individual.dna = base[l:j] + lst[::-1]
-                        else:   
-                            lst = base[j : l]
-                            individual.dna = base[:j] + lst[::-1] + base[l:]
-                        
+                                                   individual[(j+1) % individual.count].id):
+                    fx = individual.fitness()
+                    change(i+1, j)
+                    if individual.fitness() > fx:
+                        change(i+1, j)
+#                        individual._fx = fx
+                    
+                        old = individual.wslice(None,None)
+                        base = individual.wslice(None,None)
+                        lst = base[i+1 : j+1]
+                        individual.dna = base[:i+1] + lst[::-1] + base[j+1:]
                         individual.renum2()
-                        if individual.fitness() > fx*1.05:
+                        individual.fitness()
+                        if individual.fitness() > fx:
+                            #print 'aaa', individual.fx
                             individual.dna = old
                             individual.fitness()
-                k += 1
+                            #print 'hey', individual.fitness()
+                j += 1
             i +=1
+        #print individual.fitness()
+        #1/0
                     
 
 class Gready(ga.Mutation):
@@ -181,11 +188,13 @@ class Gready(ga.Mutation):
 
         #print [[g.id, g.val]  for g in individual.dna]
 
+        #cnt = -1
+
         if cnt == -1:
             idx1, idx2 = 0, individual.count -1
         else:   
-            idx1 = random.randint(0, individual.count-2)
-            idx2 = random.randint(idx1+1, individual.count-1)
+            idx1 = rand.randint(0, individual.count-2)
+            idx2 = rand.randint(idx1+1, individual.count-1)
 
         fx = individual.fitness()
 
@@ -198,8 +207,8 @@ class Gready(ga.Mutation):
             cities[city_id][1] = 1
             near_city_id = individual.vertexs.near(city_id, cities)
             if near_city_id > 0:
-                cities[near_city_id] = [idx+1, 1]
                 idx2 = cities[near_city_id][0]
+                cities[near_city_id] = [idx+1, 1]
                 #print city_id, near_city_id, idx2
                 cities[next_id][0] = idx2
                 changeid(idx+1, idx2)
@@ -209,15 +218,9 @@ class Gready(ga.Mutation):
         
         #print "result", individual.fitness(), fx
         if individual.fitness() < fx*individual.back:
-            CrossFide().mutate(individual, cnt, population)
+           CrossFide().mutate(individual, cnt, population)
 
-class CrossingoverTSP (ga.Crossingover):
-    def __init__(self):
-            ga.Crossingover.__init__(self)
-            self.rate = 0.10
-    def after_mutate(self, children, res, population):
-        for child in children:
-            CrossFide().mutate(child, 0, population)   
+
 
 class TSP( object ):
     def __init__(self, iteration, lenfoo):
@@ -230,7 +233,7 @@ class TSP( object ):
 
     def calc(self):
         self.tspga = ga.Evolution(size = 180, iteration = self.iteration, mutationtype = ga.muRandom,
-                                  generatemutation = 20, populationratemutation = 90,
+                                  generatemutation = 10, populationratemutation = 90,
                                   ClassIndividual = Way, MutationsClass = [CrossingoverTSP, ExchangeCity, MoveCity, Gready], #MoveCity
                                   args = [self.vertexs])
 
@@ -245,8 +248,11 @@ class TSP( object ):
     def setimage(self, best):
         im = Image.new("RGB", (512, 512), "white")
         draw = ImageDraw.Draw(im)
+        #font = ImageFont.truetype("sans-serif.ttf", 16)
+        #fonts_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fonts')
+        #font = ImageFont.truetype(os.path.join(fonts_path, 'sans_serif.ttf'), 24)
         for i in xrange(best.count-1):
-            #draw.text(i, (self.vertexs[best[i].id].lon, self.vertexs[best[i].id].lat-2), 'black')
+            #draw.text((self.vertexs[best[i].id].lon-5, self.vertexs[best[i].id].lat+5), str(i), (0,0,0), font = font)
             draw.ellipse((self.vertexs[best[i].id].lon-2, self.vertexs[best[i].id].lat-2,
                           self.vertexs[best[i].id].lon+2, self.vertexs[best[i].id].lat+2),
                           (0,0,0))
@@ -286,9 +292,9 @@ if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                                  math.pow((v1.lat - v2.lat),2), 0.5))
-    tsp = TSP(3000, foostraightlen)
-    tsp.load('testt.json')
-    #print tspvertexs.vertexlist
+    tsp = TSP(2000, foostraightlen)
+    tsp.load('testc.json')
+    #print tspvertxs.vertexlist
     #print tsp.vertexs.distance[1][9]
 
     tsp.calc()

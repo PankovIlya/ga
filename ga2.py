@@ -427,8 +427,8 @@ class Crossingover (Mutation):
             #print parents.selection(vparent1, child), parents.selection(vparent2, child)
             if parents.selection(vparent1, child) == 1 \
                 or  parents.selection(vparent2, child) == 1:
-                parents.add(child)
                 res += 1
+                parents.add(child)
 
         self.after_mutate(children, res, parents)
 
