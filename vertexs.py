@@ -66,7 +66,7 @@ class Vertexs (object):
         self.vertexlist.append(res)
         return res
 
-    def intersection2(self, v11, v12, v21, v22):
+    def intersection(self, v11, v12, v21, v22):
         def det (a, b, c, d):
             return a * d - b * c
 
@@ -85,14 +85,14 @@ class Vertexs (object):
         yi = - det(ay2-ay1, (ax1*ay2 - ay1*ax2), by2-by1, (bx1*by2 - by1*bx2)) / zn
 
         res = False
-        if ((ax1 <=xi) and (ax2>=xi)) or ((ax1>=xi) and (ax2<=xi)):
-            if ((ay1<=yi) and (ay2>=yi)) or ((ay1>=yi) and (ay2<=yi)):
-                if ((bx1<=xi) and (bx2>=xi)) or ((bx1>=xi) and (bx2<=xi)):
-                    if ((by1<=yi) and (by2>=yi)) or ((by1>=yi) and (by2<=yi)):
+        if ((ax1 <xi) and (ax2>xi)) or ((ax1>xi) and (ax2<xi)):
+            if ((ay1<yi) and (ay2>yi)) or ((ay1>yi) and (ay2<yi)):
+                if ((bx1<xi) and (bx2>xi)) or ((bx1>xi) and (bx2<xi)):
+                    if ((by1<yi) and (by2>yi)) or ((by1>yi) and (by2<yi)):
                         res = True
         return res
 
-    def intersection(self, v11, v12, v21, v22):
+    def intersection2(self, v11, v12, v21, v22):
         
         ax1 = self[v11].lon;  ay1 = self[v11].lat;
         ax2 = self[v12].lon;  ay2 = self[v12].lat;
@@ -119,6 +119,6 @@ class Vertexs (object):
         jm = -1
         lenij = float('inf')
         for j in xrange(0, len(self.distance[i])):
-            if i != j and cities[j][1] == 0 and lenij > self.distance[i][j]:
+            if i != j and not cities.get(j, None) and lenij > self.distance[i][j]:
                 jm, lenij = j, self.distance[i][j]
         return jm
