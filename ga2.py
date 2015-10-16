@@ -68,7 +68,7 @@ class Individual (object):
   
     def ordid(self):
         if self.sorted:
-            self.sorttype = const.CrossingoverTypedsID
+            self.sorttype = const.dsID
             self.dna.sort(cmp = const.SortType[self.sorttype])
             
 
@@ -107,7 +107,7 @@ class Individual (object):
 class Population (object):
     def __init__(self, populationsize = 100, bestprotected = True, opt_type = const.otMin,
                  ClsInd = None, args = [], calc_fitness = True,
-                 rate_procent = 0.25, best_population_rate = 0.15):
+                 rate_procent = 0.25, best_population_rate = 0.25):
         self.populationsize = populationsize 
         self.bestprotected = bestprotected
         self.args = args
@@ -115,7 +115,7 @@ class Population (object):
         self.ClsInd = ClsInd
         self.calc_fitness = calc_fitness
         self.success_list = []
-        self.individuals = []
+        self.population = []
         self.min = float('inf')
         self.max = -float('inf')
         self.best = None
@@ -132,7 +132,7 @@ class Population (object):
         children.min = self.min
         children.max = self.max
         children.best = self.best.clone()
-        children.individuals += [self.best.clone()]
+        children.population += [self.best.clone()]
 
         return children
   
@@ -147,19 +147,19 @@ class Population (object):
         pass        
             
     def __getitem__(self, idx):
-        return self.individuals[idx]
+        return self.population[idx]
 
     def __setitem__(self, idx, val):
-        self.individuals[idx] = val
+        self.population[idx] = val
 
     def conceiving(self):
         ind = self.ClsInd(*self.args)
         return ind
          
     def add(self, ind):
-        return self.individuals.append(ind) 
+        return self.population.append(ind) 
 
-    count = property(lambda self: len(self.individuals))
+    count = property(lambda self: len(self.population))
 
                    
     #min, max, sum - x, fx
@@ -168,7 +168,7 @@ class Population (object):
         self.sumx, self.sumfx, self.sumoptfx = 0, 0, 0.0
         vbest = self.best
 
-        for ind in self.individuals:
+        for ind in self.population:
             if self.calc_fitness:
                 ind.fitness()
             if ind.fx < self.min:
@@ -220,26 +220,27 @@ class Population (object):
             cnt = int(self.count*self.best_population_rate)
         elif cnt >= self.populationsize:
             cnt = self.populationsize-1
-            
+
         self.best_population_idx = cnt
 
 
     def calc(self):
         self.extreme()
         self.rate()
-        self.individuals = self.individuals[:self.populationsize]
+        self.population = self.population[:self.populationsize]
+        
 
     def csort(self):  
-        self.individuals.sort(cmp = self.selection)
+        self.population.sort(cmp = self.selection)
 
     def generation(self, size):
         for _ in xrange(self.count, size):
             ind = self.conceiving()
             ind.randomcreate(self.best)
             ind.fitness()
-            self.individuals.append(ind)
+            self.population.append(ind)
         self.best_population_idx = self.count - 1  
-            
+        
 
     def parent(self):
         i = random.randint(0, self.best_population_idx)
@@ -251,7 +252,7 @@ class Evolution (object):
                  bestprotected = True, crossingovertype = const.coRandom,
                  ClassIndividual = None, MutationsClasses = [], args = [],
                  child_count = 2, printlocalresult = True, ratestatic = False,
-                 optimization_type = const.otMin):
+                 optimization_type = const.otMin, kfactor = float('inf')):
 
         self.populationsize = size
         self.iteration = iteration
@@ -269,6 +270,7 @@ class Evolution (object):
         self.child_count = child_count
         self.optimization_type = optimization_type 
         self.ratestatic = ratestatic
+        self.kfactor = kfactor 
         self.init()
 
     def init(self):
@@ -291,16 +293,19 @@ class Evolution (object):
 
     def calc(self):
         i = 0
-        for i in xrange(self.iteration):
+        for i in xrange(1, self.iteration):
+            if not (i % self.kfactor):
+                self.disaster()
             self.anthropogeny()
             if self.printlocalresult:
-                print "population {0}  best {1}".format(i, self.population.best)
+                print "population {0} count{1}  best {2}".format(i, self.population.count, self.population.best)
                 #print self.population.best
                         
             
     def anthropogeny(self):
         self.mutation()
         self.population.calc()
+        
     
 
     def mutation(self):
@@ -311,7 +316,9 @@ class Evolution (object):
         print self.population.best
 
     def disaster(self):
-        pass
+        #pass
+        self.population.population = [self.population.best.clone()]
+        self.generation()
         
 
 if __name__ == "__main__":

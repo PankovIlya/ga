@@ -61,7 +61,7 @@ class DiffArr (ga.Individual):
             
             
 arr = [random.randint(0, 5000) for x in xrange(0,1000)]
-partitionproblem = ga.Evolution(size = 150, iteration = 20, 
+partitionproblem = ga.Evolution(size = 150, iteration = 22, 
               generatemutation = 30, populationratemutation = 80, ClassIndividual = DiffArr,
               MutationsClasses = [mut.Crossingover, mut.MRand], args = [arr])
 
@@ -71,7 +71,7 @@ partitionproblem.population.best.printresult(False)
 print "It's more thins setting"
 partitionproblem.populationsize = 180
 partitionproblem.generatemutation = 0.1
-partitionproblem.iteration = 20
+partitionproblem.iteration = 22
 partitionproblem.generation()
 partitionproblem.calc()
 partitionproblem.population.best.printresult(False)
@@ -199,19 +199,21 @@ class MIns (mut.Mutation):
 
 
 s = 'Marchelo teaches Savelys evolution biology. Happy Birthday!!!'
-ss = ga.Evolution(size = 1000, iteration = 90, 
-               generatemutation = 25, populationratemutation = 80, ClassIndividual = Sstting,
-               MutationsClasses = [mut.Crossingover, MChange, MDelIns, MDel, MIns], args = [s])
+ss = ga.Evolution(size = 750, iteration = 100, 
+               generatemutation = 25, populationratemutation = 80,
+               ClassIndividual = Sstting,
+               MutationsClasses = [mut.Crossingover, MChange, MDelIns, MDel, MIns],
+               args = [s], kfactor = 30)
 
 ss.calc()
 print "It's more thins setting"
-ss.populationsize = 5000
+ss.populationsize = 2000
 ss.generatemutation = 12
-ss.iteration = 40
+ss.iteration = 50
 ss.generation()
 ss.calc()
 
-print 1/0
+
     
     
     
