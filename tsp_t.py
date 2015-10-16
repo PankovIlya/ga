@@ -64,20 +64,21 @@ class Way (ga.Individual):
             for i in xrange(cnt):
                 g = self.addgen()
 
-            rand.shuffle(self.dna)
+            #rand.shuffle(self.dna)
 
             for i in xrange(cnt):
                 self[i].val = i 
 
         self.fitness()
-        Gready().mutate(self, 0, None)
+        #Gready().mutate(self, -1, None)
+        print 'init'
         #CrossFide().mutate(self, -1, None)
                 
 
 class CrossingoverTSP (ga.Crossingover):
     def __init__(self):
             ga.Crossingover.__init__(self)
-            self.rate = 0.9
+            self.rate = 0.45
     def after_mutate(self, children, res, population):
         pass
         #for child in children:
@@ -87,7 +88,7 @@ class ExchangeCity(ga.Mutation):
     def __init__(self):
             ga.Mutation.__init__(self)
             self.name = 'ExchangeCity'
-            self.rate = 0.95
+            self.rate = 1
             
     def mutate(self, individual, cnt, population):
         def change(idx1, idx2):
@@ -101,14 +102,14 @@ class ExchangeCity(ga.Mutation):
         change(idx1, idx2)
 
         if individual.fitness() < fx*individual.back:
-            CrossFide().mutate(individual, -1, population)
+            CrossFide().mutate(individual, cnt, population)
 
 
 class MoveCity(ga.Mutation):
     def __init__(self):
             ga.Mutation.__init__(self)
             self.name = 'MoveCity'
-            self.rate = 1
+            self.rate = 0.75
    
     def mutate(self, individual, cnt, population):
 
@@ -126,7 +127,7 @@ class MoveCity(ga.Mutation):
 
         individual.renum2()
         if individual.fitness() < fx*individual.back:
-            CrossFide().mutate(individual, -1, population)
+            CrossFide().mutate(individual, cnt, population)
 
 
 class CrossFide(ga.Mutation):
@@ -150,6 +151,7 @@ class CrossFide(ga.Mutation):
                                                    individual[i+1].id,
                                                    individual[j].id,
                                                    individual[(j+1) % individual.count].id):
+                    print "HI", i, j
                     fx = individual.fitness()
                     change(i+1, j)
                     if individual.fitness() > fx:
@@ -258,16 +260,17 @@ class TSP( object ):
         self.iteration = iteration
 
     def after_best_create(self, best):
-        CrossFide().mutate(best, 0, None)
+        pass
+        #CrossFide().mutate(best, 0, None)
 
     def calc(self):
-        self.tspga = ga.Evolution(size = 190, iteration = self.iteration, mutationtype = ga.muRandom,
+        self.tspga = ga.Evolution(size = 0, iteration = self.iteration, mutationtype = ga.muRandom,
                                   generatemutation = 20, populationratemutation = 90,
-                                  ClassIndividual = Way, MutationsClasses = [CrossingoverTSP, ExchangeCity, MoveCity], #Gready CrossingoverTSP, Gready MoveCity
-                                  args = [self.vertexs], ratestatic = False)
+                                  ClassIndividual = Way, MutationsClass = [CrossingoverTSP, Gready, ExchangeCity, MoveCity], #CrossingoverTSP, Gready MoveCity
+                                  args = [self.vertexs])
 
         self.tspga.after_best_create = self.after_best_create
-        self.tspga.init()
+        #self.tspga.init()
         self.tspga.calc()
         best = self.tspga.population.best
         best.ordval()
@@ -281,7 +284,7 @@ class TSP( object ):
         #fonts_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fonts')
         #font = ImageFont.truetype(os.path.join(fonts_path, 'sans_serif.ttf'), 24)
         for i in xrange(best.count-1):
-            #draw.text((self.vertexs[best[i].id].lon-5, self.vertexs[best[i].id].lat+5), str(i), (0,0,0), font = font)
+            draw.text((self.vertexs[best[i].id].lon-5, self.vertexs[best[i].id].lat+5), str(i), (0,0,0))
             draw.ellipse((self.vertexs[best[i].id].lon-2, self.vertexs[best[i].id].lat-2,
                           self.vertexs[best[i].id].lon+2, self.vertexs[best[i].id].lat+2),
                           (0,0,0))
@@ -321,8 +324,8 @@ if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                                  math.pow((v1.lat - v2.lat),2), 0.5))
-    tsp = TSP(500, foostraightlen)
-    tsp.load('testt.json')
+    tsp = TSP(0, foostraightlen)
+    tsp.load('test.json')
     #print tspvertxs.vertexlist
     #print tsp.vertexs.distance[1][9]
 
