@@ -154,12 +154,12 @@ class Crossingover (Mutation):
         
         i = 0
         fx1, fx2 = vparent1.fx, vparent1.fx      
-        while fx1 == fx2 and i < 100:
+        while fx1 == fx2 and i < 70:
             vparent2 = parents.parent()
             fx2 = vparent2.fx
             i += 1
 
-        if i == 100:
+        if i == 70:
             return res
             print '!!!!!!!!!!!!!!!!!!!!! warning !!! no parent for Crossingover ', parents.best_population_idx
     
