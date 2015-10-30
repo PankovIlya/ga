@@ -224,7 +224,8 @@ class Population (object):
 
         self.best_population_idx = cnt
 
-        self.elite = [self[i].clone() for i in xrange(cnt)]
+        self.elite =  [self[i].clone() for i in xrange(cnt)]
+        self.elite += [self.best.clone()]
 
 
     def calc(self):

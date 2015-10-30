@@ -92,7 +92,7 @@ class TSP( object ):
         self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
                                   MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity], #Gready 
-                                  args = [self.vertexs], ratestatic = False, kfactor = 50, tt_num = self.tt_num)
+                                  args = [self.vertexs], ratestatic = False, kfactor = 40, tt_num = self.tt_num)
 
         self.tspga.after_best_create = self.after_best_create
         self.tspga.calc()
@@ -150,8 +150,8 @@ if __name__ == "__main__":
                                                   math.pow((v1.lat - v2.lat),2), 0.5))
     t = time.time()
     res = []
-    for i in xrange(50):
-        tsp = TSP(500, i, foostraightlen)
+    for i in xrange(70):
+        tsp = TSP(3500, i, foostraightlen)
         tsp.load('testt.json')
         #print tspvertxs.vertexlist
         #print tsp.vertexs.distance[1][9]
