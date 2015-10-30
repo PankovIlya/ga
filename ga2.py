@@ -126,6 +126,7 @@ class Population (object):
         self.rate_procent = rate_procent
         self.best_population_rate = best_population_rate
         self.best_population_idx = 0
+        self.elite = []
 
     def clone(self):
         children = self.__class__(self.bestprotected, self.optimisationtype, self.ClsInd, self.args)
@@ -223,6 +224,8 @@ class Population (object):
 
         self.best_population_idx = cnt
 
+        self.elite = [self[i].clone() for i in xrange(cnt)]
+
 
     def calc(self):
         self.extreme()
@@ -243,8 +246,9 @@ class Population (object):
         
 
     def parent(self):
-        i = random.randint(0, self.best_population_idx)
-        return self[i]
+        cnt = len(self.elite) - 1
+        i = random.randint(0, cnt)
+        return self.elite[i]
         
 class Evolution (object):
     def __init__(self, size = 100, iteration = 20, generatemutation = 100,
@@ -252,7 +256,7 @@ class Evolution (object):
                  bestprotected = True, crossingovertype = const.coRandom,
                  ClassIndividual = None, MutationsClasses = [], args = [],
                  child_count = 2, printlocalresult = True, ratestatic = False,
-                 optimization_type = const.otMin, kfactor = float('inf')):
+                 optimization_type = const.otMin, kfactor = float('inf'), tt_num = 1):
 
         self.populationsize = size
         self.iteration = iteration
@@ -270,7 +274,8 @@ class Evolution (object):
         self.child_count = child_count
         self.optimization_type = optimization_type 
         self.ratestatic = ratestatic
-        self.kfactor = kfactor 
+        self.kfactor = kfactor
+        self.tt_num = tt_num
         self.init()
 
     def init(self):
@@ -283,7 +288,7 @@ class Evolution (object):
             self.mutations.add(mCls())
 
         self.mutations.init()
-        #print self.mutations
+        print self.mutations
         
 
         self.population.calc()
@@ -298,7 +303,11 @@ class Evolution (object):
                 self.disaster()
             self.anthropogeny()
             if self.printlocalresult:
-                print "population {0} count{1}  best {2}".format(i, self.population.count, self.population.best)
+                print "experiment {3} population {0} count{1}  best {2}".format(i, self.population.count, self.population.best, self.tt_num)
+                #top = [x.fx for x in self.population]
+                #top.sort()
+                #print top
+
                 #print self.population.best
                         
             

@@ -8,9 +8,9 @@ class CrossingoverTSP (mut.Crossingover):
             super(self.__class__, self).__init__()
             self.rate = 0.9
     def after_mutate(self, children, res, population):
-        pass
-        #for child in children:
-        #    CrossFide().mutate(child, 0, population)     
+        num = population.count - res + 1
+        for child in population[num:]:
+            CrossFide().mutate(child, 0, population)     
 
 class ExchangeCity(mut.Mutation):
     def __init__(self):

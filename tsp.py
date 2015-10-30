@@ -4,7 +4,7 @@ import random as rand, os
 
 from PIL import Image 
 from PIL import ImageDraw
-from PIL import ImageFont
+#from PIL import ImageFont
 
 
 class Way (ga.Individual):
@@ -76,26 +76,30 @@ class Way (ga.Individual):
         #CrossFide().mutate(self, -1, None)
 
 class TSP( object ):
-    def __init__(self, iteration, lenfoo):
+    def __init__(self, iteration, num, lenfoo):
         self.vertexs = vertexs.Vertexs(lenfoo)
         self.tspga = None
         self.iteration = iteration
+        self.tt_num = num
 
     def after_best_create(self, best):
         CrossFide().mutate(best, 0, None)
+
+    def result(self):
+        return self.tspga.population.best.fx
 
     def calc(self):
         self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
                                   MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity], #Gready 
-                                  args = [self.vertexs], ratestatic = False, kfactor = 50)
+                                  args = [self.vertexs], ratestatic = False, kfactor = 50, tt_num = self.tt_num)
 
         self.tspga.after_best_create = self.after_best_create
         self.tspga.calc()
         best = self.tspga.population.best
         best.ordval()
-        self.setimage(best)
-        self.save(best)
+        #self.setimage(best)
+        #self.save(best)
 
     def setimage(self, best):
         im = Image.new("RGB", (512, 512), "white")
@@ -141,15 +145,27 @@ class TSP( object ):
         #print self.vertexs
 
 if __name__ == "__main__":
-    import json, math
+    import json, math, time
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
-                                                 math.pow((v1.lat - v2.lat),2), 0.5))
-    tsp = TSP(500, foostraightlen)
-    tsp.load('testt.json')
-    #print tspvertxs.vertexlist
-    #print tsp.vertexs.distance[1][9]
+                                                  math.pow((v1.lat - v2.lat),2), 0.5))
+    t = time.time()
+    res = []
+    for i in xrange(50):
+        tsp = TSP(500, i, foostraightlen)
+        tsp.load('testt.json')
+        #print tspvertxs.vertexlist
+        #print tsp.vertexs.distance[1][9]
+        tsp.calc()
+        res += [tsp.result()]
 
-    tsp.calc()
+    res.sort()
+    l100 = filter(lambda x: x < 2076, res)
+    print 'result < 2076', len(l100), 'rrr', l100
+    l100 = filter(lambda x: 2076 < x < 2100, res)
+    print 'result < 2100', len(l100), 'rrr', l100 
+    print res
+    print time.time() - t
+            
 
 
     

@@ -39,7 +39,5 @@ def load(filename):
             
 
 load('testt.json')
-
-
-#with open('testg.json', 'w') as outfile:
-#            json.dump(parse('test1.txt'), outfile)
+with open('testt.json', 'w') as outfile:
+            json.dump(parse('test1.txt'), outfile)
