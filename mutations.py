@@ -169,7 +169,7 @@ class Crossingover (Mutation):
             #print child.fx, vparent1.fx,  vparent2.fx
             #print parents.selection(vparent1, child), parents.selection(vparent2, child)
             if parents.selection(vparent1, child) == 1 \
-                or  parents.selection(vparent2, child) == 1:
+                and parents.selection(vparent2, child) != 0:
                 res += 1
                 parents.add(child)
 
@@ -197,7 +197,7 @@ class Crossingover (Mutation):
         children = clones.values()
         self.population.rang(children)
         
-        return children[:2]
+        return children
 
     def meiosis(self, child, len_chr, parent1, parent2):
         child.dna = parent1[:len_chr] + parent2[len_chr:]

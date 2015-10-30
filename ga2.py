@@ -162,7 +162,9 @@ class Population (object):
 
     count = property(lambda self: len(self.population))
 
-                   
+    def __getslice__(self, n, m):
+        return self.population[n:m]
+    
     #min, max, sum - x, fx
     def extreme(self):
 
@@ -224,14 +226,19 @@ class Population (object):
 
         self.best_population_idx = cnt
 
-        self.elite =  [self[i].clone() for i in xrange(cnt)]
-        self.elite += [self.best.clone()]
+        self.elite = [self.best.clone()]
+        clones = {}
+        for ind in self[:cnt]:
+            if not clones.get(ind.fx, None):
+                clones[ind.fx] = ind        
+
+        self.elite += clones.values()
 
 
     def calc(self):
         self.extreme()
         self.rate()
-        self.population = self.population[:self.populationsize]
+        self.population = [self.best.clone()] + self.population[:self.populationsize-1]
         
 
     def csort(self):  
