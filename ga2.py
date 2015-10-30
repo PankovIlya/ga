@@ -252,7 +252,7 @@ class Evolution (object):
                  bestprotected = True, crossingovertype = const.coRandom,
                  ClassIndividual = None, MutationsClasses = [], args = [],
                  child_count = 2, printlocalresult = True, ratestatic = False,
-                 optimization_type = const.otMin, kfactor = float('inf')):
+                 optimization_type = const.otMin, kfactor = float('inf'), tt_num = 0):
 
         self.populationsize = size
         self.iteration = iteration
@@ -270,7 +270,8 @@ class Evolution (object):
         self.child_count = child_count
         self.optimization_type = optimization_type 
         self.ratestatic = ratestatic
-        self.kfactor = kfactor 
+        self.kfactor = kfactor
+        self.tt_num = tt_num
         self.init()
 
     def init(self):
@@ -298,7 +299,7 @@ class Evolution (object):
                 self.disaster()
             self.anthropogeny()
             if self.printlocalresult:
-                print "population {0} count{1}  best {2}".format(i, self.population.count, self.population.best)
+                print "ex {3} population {0} count {1}  best {2}".format(i, self.population.count, self.population.best, self.tt_num)
                 #print self.population.best
                         
             

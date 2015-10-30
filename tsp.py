@@ -1,6 +1,7 @@
 import ga2 as ga
 import vertexs, tsp_optimizations as opt
 import random as rand, os
+import json
 
 from PIL import Image 
 from PIL import ImageDraw
@@ -76,10 +77,11 @@ class Way (ga.Individual):
         #CrossFide().mutate(self, -1, None)
 
 class TSP( object ):
-    def __init__(self, iteration, lenfoo):
+    def __init__(self, iteration, tt_num, lenfoo):
         self.vertexs = vertexs.Vertexs(lenfoo)
         self.tspga = None
         self.iteration = iteration
+        self.tt_num = tt_num
 
     def after_best_create(self, best):
         CrossFide().mutate(best, 0, None)
@@ -88,7 +90,8 @@ class TSP( object ):
         self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
                                   MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity], #Gready 
-                                  args = [self.vertexs], ratestatic = False, kfactor = 50)
+                                  args = [self.vertexs], ratestatic = False, kfactor = 50,
+                                  tt_num = self.tt_num)
 
         self.tspga.after_best_create = self.after_best_create
         self.tspga.calc()
@@ -140,11 +143,14 @@ class TSP( object ):
         self.vertexs.calcmatrix()
         #print self.vertexs
 
+    def result(self):
+        return self.tspga.population.best.fx
+
 if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                                  math.pow((v1.lat - v2.lat),2), 0.5))
-    tsp = TSP(500, foostraightlen)
+    tsp = TSP(500, 0, foostraightlen)
     tsp.load('testt.json')
     #print tspvertxs.vertexlist
     #print tsp.vertexs.distance[1][9]
