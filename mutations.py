@@ -102,7 +102,7 @@ class Mutations (object):
         if self.count == 0:
             return
                        
-        for idx in xrange(population.count):
+        for idx in xrange(population.count-1, 1, -1):
             #select mutation
             mutation = self.get_mutation()
             

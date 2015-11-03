@@ -238,7 +238,7 @@ class Population (object):
     def calc(self):
         self.extreme()
         self.rate()
-        self.population = [self.best.clone()] + self.population[:self.populationsize-1]
+        self.population = self.population[:self.populationsize]
         
 
     def csort(self):  
@@ -254,9 +254,10 @@ class Population (object):
         
 
     def parent(self):
-        cnt = len(self.elite) - 1
+        #cnt = len(self.elite) - 1
+        cnt = self.best_population_idx
         i = random.randint(0, cnt)
-        return self.elite[i]
+        return self[i]
         
 class Evolution (object):
     def __init__(self, size = 100, iteration = 20, generatemutation = 100,

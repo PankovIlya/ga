@@ -92,7 +92,7 @@ class TSP( object ):
         self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
                                   MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity], #Gready 
-                                  args = [self.vertexs], ratestatic = False, kfactor = 40, tt_num = self.tt_num)
+                                  args = [self.vertexs], ratestatic = False, kfactor = 60, tt_num = self.tt_num)
 
         self.tspga.after_best_create = self.after_best_create
         self.tspga.calc()
