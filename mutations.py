@@ -150,7 +150,7 @@ class Crossingover (Mutation):
 
         #vparent1 = parents.parent()
         vparent1 = parents.best
-
+        #vparent2 = individual
         
         i = 0
         vparent2 = vparent1
@@ -192,9 +192,7 @@ class Crossingover (Mutation):
         return children[:2]
 
     def meiosis(self, child, parent1, parent2):
-
         len_chr = random.randint(0, parent1.count)
-
         child.dna = parent1[:len_chr] + parent2[len_chr:]
         child.fitness()
 
