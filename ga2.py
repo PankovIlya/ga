@@ -94,8 +94,8 @@ class Individual (object):
     def calcx(self):
         raise Exception('Absract method, return x')
 
-    def randomcreate(self, best=None):
-         raise Exception('Absract method, fill DNA')
+    def randomcreate(self, v_opt=True):
+         raise Exception('Absract method, fill DNA') #NotImpl
 
     def clone(self):
         clone = self.__class__(*self._args)
@@ -151,6 +151,9 @@ class Population (object):
 
     def __setitem__(self, idx, val):
         self.population[idx] = val
+
+    def __getslice__(self, n, m):
+        return self.population[n:m]
 
     def conceiving(self):
         ind = self.ClsInd(*self.args)
@@ -213,15 +216,39 @@ class Population (object):
             return self.count - 1
  
         self.csort()
+        self.repetition()
+        self.csort()
+        #self.repetition(True)
         val = self.best.fx + ((self.max-self.best.fx)*self.rate_procent)
         cnt = find(val)
 
+        #print [ind.fx for ind in self.population]
+        
+        
         if cnt < self.count*self.best_population_rate:
             cnt = int(self.count*self.best_population_rate)
         elif cnt >= self.populationsize:
             cnt = self.populationsize-1
 
         self.best_population_idx = cnt
+
+
+    def repetition(self, ast = False):
+        fx = float('inf')
+        n0, n = 0, 0
+        for i in xrange(self.count):
+            if fx != self[i].fx:
+                if n0 != n: 
+                    #cdprint n0, n
+                    #print [ind.fx for ind in self[n0:n]]
+                    new = [self.rand_ind() for _ in xrange(n-n0)]
+                    self.population = self[:n0+1] + new + self[n:]
+                    #print [ind.fx for ind in self[n0:n]]
+                    #if ast and self.count > 1:
+                    #    raise Exeption('[eq')
+                fx, n0, n = self[i].fx, i, i
+            else:
+                n += 1
 
 
     def calc(self):
@@ -236,12 +263,18 @@ class Population (object):
     def generation(self, size):
         for _ in xrange(self.count, size):
             ind = self.conceiving()
-            ind.randomcreate(self.best)
+            ind.randomcreate()
             ind.fitness()
             self.population.append(ind)
         self.best_population_idx = self.count - 1  
         
+    def rand_ind(self):
+        ind = self.conceiving()
+        ind.randomcreate(v_opt = True)
+        ind.fitness()
+        return ind      
 
+    
     def parent(self):
         i = random.randint(0, self.best_population_idx)
         return self[i]

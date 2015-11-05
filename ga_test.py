@@ -31,7 +31,7 @@ class DiffArr (ga.Individual):
 
     foofx = lambda self, x: x**2
 
-    def randomcreate(self, best=None):
+    def randomcreate(self, **args):
         for i in xrange(len(self.arr)):
             g = self.addgen()
             g.val = 1 #random.randint(0,1)
@@ -131,7 +131,7 @@ class Sstting (ga.Individual):
         
     foofx = lambda self, x: 5**x
 
-    def randomcreate(self, best=None):
+    def randomcreate(self, **args):
         n = len(alphabet)
         for i in xrange(len(self.sword)):
             g = self.addgen()

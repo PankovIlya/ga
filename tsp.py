@@ -55,25 +55,22 @@ class Way (ga.Individual):
     
     foofx = lambda self, x: x
 
-    def randomcreate(self, best=None):
+    def randomcreate(self, v_opt=True):
         
-        best = None
-        if best:
-            self.dna = best.clone().dna
-        else:
-            cnt = self.vertexs.count
-            if cnt < 2:
-                raise Exception('City count < 2!')
-            for i in xrange(cnt):
-                g = self.addgen()
+        cnt = self.vertexs.count
+        if cnt < 2:
+            raise Exception('City count < 2!')
+        for i in xrange(cnt):
+            g = self.addgen()
 
-            rand.shuffle(self.dna)
+        rand.shuffle(self.dna)
 
-            for i in xrange(cnt):
-                self[i].val = i 
+        for i in xrange(cnt):
+            self[i].val = i 
 
         self.fitness()
-        opt.Gready().mutate(self, 0, None)
+        if v_opt:
+            opt.Gready().mutate(self, 0, None)
         #CrossFide().mutate(self, -1, None)
 
 class TSP( object ):
@@ -90,7 +87,7 @@ class TSP( object ):
         self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
                                   MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity], #Gready 
-                                  args = [self.vertexs], ratestatic = False, kfactor = 50,
+                                  args = [self.vertexs], ratestatic = False, kfactor = 500,
                                   tt_num = self.tt_num)
 
         self.tspga.after_best_create = self.after_best_create

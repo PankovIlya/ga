@@ -5,8 +5,8 @@ foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
                                               math.pow((v1.lat - v2.lat),2), 0.5))
 t = time.time()
 res = []
-for i in xrange(50):
-    tsp = ts.TSP(500, i, foostraightlen)
+for i in xrange(300):
+    tsp = ts.TSP(1000, i, foostraightlen)
     tsp.load('testt.json')
     #print tspvertxs.vertexlist
     #print tsp.vertexs.distance[1][9]
