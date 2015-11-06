@@ -149,26 +149,40 @@ class Crossingover (Mutation):
         self.population = parents
 
         #vparent1 = parents.parent()
+<<<<<<< HEAD
+        #vparent1 = parents.best
+        vparent1 = individual
+        
+        i = 0
+        fx1, fx2 = vparent1.fx, vparent1.fx      
+        while fx1 == fx2 and i < 100:
+=======
         #vparent2 = parents.best
         vparent1 = individual
         
         i = 0
         vparent2 = vparent1
         while vparent2.fx == vparent1.fx and i < 100:
+>>>>>>> master
             vparent2 = parents.parent()
+            fx2 = vparent2.fx
             i += 1
 
         if i == 100:
             return res
             print '!!!!!!!!!!!!!!!!!!!!! warning !!! no parent for Crossingover ', parents.best_population_idx
     
-        children = self.fertilisation(vparent1, vparent2)
+        children = self.amphimixis(vparent1, vparent2)
 
         for child in children:
             #print child.fx, vparent1.fx,  vparent2.fx
             #print parents.selection(vparent1, child), parents.selection(vparent2, child)
             if parents.selection(vparent1, child) == 1 \
+<<<<<<< HEAD
+                and parents.selection(vparent2, child) != 0:
+=======
                 or  parents.selection(vparent2, child) != 0:
+>>>>>>> master
                 res += 1
                 parents.add(child)
                 self.after_mutate(child, res, parents)
@@ -177,21 +191,34 @@ class Crossingover (Mutation):
 
          
  
-    def fertilisation(self, parent1, parent2):
+    def amphimixis(self, parent1, parent2):
 
         children = []
         
         for _ in xrange(self.child_count):
-            children.append(self.meiosis(self.population.conceiving(), parent1, parent2))
-            children.append(self.meiosis(self.population.conceiving(), parent2, parent1))
+            len_chr = random.randint(1, parent1.count)
+            children.append(self.meiosis(self.population.conceiving(), len_chr, parent1, parent2))
+            children.append(self.meiosis(self.population.conceiving(), len_chr, parent2, parent1))
 
-        self.population.rang(children)
         #print [child.fx for child in children]
+        clones = {}
+        for child in children:
+            if not clones.get(child.fx, None):
+                clones[child.fx] = child
 
+<<<<<<< HEAD
+        children = clones.values()
+        self.population.rang(children)
+        
+        return children
+
+    def meiosis(self, child, len_chr, parent1, parent2):
+=======
         return children[:2]
 
     def meiosis(self, child, parent1, parent2):
         len_chr = random.randint(0, parent1.count)
+>>>>>>> master
         child.dna = parent1[:len_chr] + parent2[len_chr:]
         child.fitness()
 

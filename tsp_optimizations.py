@@ -6,9 +6,17 @@ import random as rand
 class CrossingoverTSP (mut.Crossingover):
     def __init__(self):
             super(self.__class__, self).__init__()
+<<<<<<< HEAD
+            self.rate = 0.9
+    def after_mutate(self, children, res, population):
+        num = population.count - res + 1
+        for child in population[num:]:
+            CrossFide().mutate(child, 0, population)     
+=======
             self.rate = 0.40
     def after_mutate(self, child, res, population):
         CrossFide().mutate(child, 0, population)     
+>>>>>>> master
 
 class ExchangeCity(mut.Mutation):
     def __init__(self):

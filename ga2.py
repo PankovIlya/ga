@@ -126,6 +126,7 @@ class Population (object):
         self.rate_procent = rate_procent
         self.best_population_rate = best_population_rate
         self.best_population_idx = 0
+        self.elite = []
 
     def clone(self):
         children = self.__class__(self.bestprotected, self.optimisationtype, self.ClsInd, self.args)
@@ -165,7 +166,9 @@ class Population (object):
 
     count = property(lambda self: len(self.population))
 
-                   
+    def __getslice__(self, n, m):
+        return self.population[n:m]
+    
     #min, max, sum - x, fx
     def extreme(self):
 
@@ -235,6 +238,14 @@ class Population (object):
 
         self.best_population_idx = cnt
 
+        self.elite = [self.best.clone()]
+        clones = {}
+        for ind in self[:cnt]:
+            if not clones.get(ind.fx, None):
+                clones[ind.fx] = ind        
+
+        self.elite += clones.values()
+
 
     def repetition(self, ast = False):
         unique = {}
@@ -249,7 +260,7 @@ class Population (object):
     def calc(self):
         self.extreme()
         self.rate()
-        self.population = self.population[:self.populationsize]
+        self.population = [self.best.clone()] + self.population[:self.populationsize-1]
         
 
     def csort(self):  
@@ -271,9 +282,15 @@ class Population (object):
 
     
     def parent(self):
+<<<<<<< HEAD
+        cnt = len(self.elite) - 1
+        i = random.randint(0, cnt)
+        return self.elite[i]
+=======
         elite = self.elite.values()
         i = random.randint(0, len(elite)-1)
         return self[i]
+>>>>>>> master
         
 class Evolution (object):
     def __init__(self, size = 100, iteration = 20, generatemutation = 100,
@@ -281,7 +298,11 @@ class Evolution (object):
                  bestprotected = True, crossingovertype = const.coRandom,
                  ClassIndividual = None, MutationsClasses = [], args = [],
                  child_count = 2, printlocalresult = True, ratestatic = False,
+<<<<<<< HEAD
+                 optimization_type = const.otMin, kfactor = float('inf'), tt_num = 1):
+=======
                  optimization_type = const.otMin, kfactor = float('inf'), tt_num = 0):
+>>>>>>> master
 
         self.populationsize = size
         self.iteration = iteration
@@ -313,7 +334,7 @@ class Evolution (object):
             self.mutations.add(mCls())
 
         self.mutations.init()
-        #print self.mutations
+        print self.mutations
         
 
         self.population.calc()
@@ -328,7 +349,15 @@ class Evolution (object):
                 self.disaster()
             self.anthropogeny()
             if self.printlocalresult:
+<<<<<<< HEAD
+                print "experiment {3} population {0} count{1}  best {2}".format(i, self.population.count, self.population.best, self.tt_num)
+                #top = [x.fx for x in self.population]
+                #top.sort()
+                #print top
+
+=======
                 print "ex {3} population {0} count {1}  best {2}".format(i, self.population.count, self.population.best, self.tt_num)
+>>>>>>> master
                 #print self.population.best
                         
             

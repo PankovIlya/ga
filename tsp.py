@@ -1,11 +1,15 @@
 import ga2 as ga
 import vertexs, tsp_optimizations as opt
+<<<<<<< HEAD
+import random as rand, os, json
+=======
 import random as rand, os
 import json
+>>>>>>> master
 
 from PIL import Image 
 from PIL import ImageDraw
-from PIL import ImageFont
+#from PIL import ImageFont
 
 
 class Way (ga.Individual):
@@ -74,27 +78,43 @@ class Way (ga.Individual):
         #CrossFide().mutate(self, -1, None)
 
 class TSP( object ):
+<<<<<<< HEAD
+    def __init__(self, iteration, num, lenfoo):
+        self.vertexs = vertexs.Vertexs(lenfoo)
+        self.tspga = None
+        self.iteration = iteration
+        self.tt_num = num
+=======
     def __init__(self, iteration, tt_num, lenfoo):
         self.vertexs = vertexs.Vertexs(lenfoo)
         self.tspga = None
         self.iteration = iteration
         self.tt_num = tt_num
+>>>>>>> master
 
     def after_best_create(self, best):
         CrossFide().mutate(best, 0, None)
 
+    def result(self):
+        return self.tspga.population.best.fx
+
     def calc(self):
         self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
+<<<<<<< HEAD
+                                  MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity], #Gready 
+                                  args = [self.vertexs], ratestatic = False, kfactor = 40, tt_num = self.tt_num)
+=======
                                   MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity, opt.Gready], #Gready 
                                   args = [self.vertexs], ratestatic = True, kfactor = 900, tt_num = self.tt_num)
+>>>>>>> master
 
         self.tspga.after_best_create = self.after_best_create
         self.tspga.calc()
         best = self.tspga.population.best
         best.ordval()
         self.setimage(best)
-        self.save(best)
+        #self.save(best)
 
     def setimage(self, best):
         im = Image.new("RGB", (512, 512), "white")
@@ -139,6 +159,9 @@ class TSP( object ):
         self.vertexs.calcmatrix()
         #print self.vertexs
 
+<<<<<<< HEAD
+          
+=======
     def result(self):
         return self.tspga.population.best.fx
 
@@ -152,6 +175,7 @@ if __name__ == "__main__":
     #print tsp.vertexs.distance[1][9]
 
     tsp.calc()
+>>>>>>> master
 
 
     
