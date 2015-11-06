@@ -84,7 +84,7 @@ class TSP( object ):
         CrossFide().mutate(best, 0, None)
 
     def calc(self):
-        self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
+        self.tspga = ga.Evolution(size = 290, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
                                   MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity, opt.Gready], #Gready 
                                   args = [self.vertexs], ratestatic = True, kfactor = 900, tt_num = self.tt_num)

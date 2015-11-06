@@ -107,7 +107,7 @@ class Mutations (object):
             mutation = self.get_mutation()
             
             if isinstance(mutation, Crossingover):
-                cnt = self.childcount
+                cnt = idx
             else:
                 cnt = int(((population[idx].count-1)*generatemutation)//100) + 1
 
@@ -137,15 +137,14 @@ class Crossingover (Mutation):
     def __init__(self):
             Mutation.__init__(self)
             self.name = 'Crossingover'
-            self.childcount = 0
+            self.childcount = 1
             self.population = None
 
     def after_mutate(self, children, res, population):
         pass
 
-    def mutate(self, individual, cnt, parents):
+    def mutate(self, individual, idx, parents):
         res = 0
-        self.child_count = cnt
         self.population = parents
 
         #vparent1 = parents.parent()
@@ -167,11 +166,10 @@ class Crossingover (Mutation):
         for child in children:
             #print child.fx, vparent1.fx,  vparent2.fx
             #print parents.selection(vparent1, child), parents.selection(vparent2, child)
-            if parents.selection(vparent1, child) == 1 \
-                or  parents.selection(vparent2, child) != 0:
-                res += 1
-                parents.add(child)
-                self.after_mutate(child, res, parents)
+            self.after_mutate(child, res, parents)
+            if parents.selection(vparent1, child) == 1 and parents.selection(vparent2, child) != 0:
+                parents[idx] = child
+                return res
 
         return res
 
@@ -181,7 +179,7 @@ class Crossingover (Mutation):
 
         children = []
         
-        for _ in xrange(self.child_count):
+        for _ in xrange(self.childcount):
             children.append(self.meiosis(self.population.conceiving(), parent1, parent2))
             children.append(self.meiosis(self.population.conceiving(), parent2, parent1))
 
@@ -191,7 +189,7 @@ class Crossingover (Mutation):
         return children[:2]
 
     def meiosis(self, child, parent1, parent2):
-        len_chr = random.randint(0, parent1.count)
+        len_chr = random.randint(1, parent1.count-2)
         child.dna = parent1[:len_chr] + parent2[len_chr:]
         child.fitness()
 

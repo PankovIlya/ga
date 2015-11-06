@@ -189,6 +189,12 @@ class Population (object):
         if self.selection(self.best, vbest) == 1: 
             self.best = vbest.clone()
             self.elite[self.best.fx] = self.best
+##            elite = self.elite.values()
+##            self.rang(elite)
+##            elite = elite[:5]
+##            self.elite = {}
+##            for idx in elite:
+##                self.elite[idx.fx] = idx #peredelat
 
             
         #print [i.fx for i in self.individuals]  
@@ -239,7 +245,11 @@ class Population (object):
     def repetition(self, ast = False):
         unique = {}
         for ind in self.population:
-            unique[ind.fx] = ind         
+            unique[ind.fx] = ind
+
+        for ind in self.elite.values():
+            if not unique.get(ind.fx, None): 
+                unique[ind.fx] = ind.clone()
 
         new = [self.rand_ind() for _ in xrange(self.count - len(unique))]
 
