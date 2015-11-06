@@ -5,7 +5,7 @@ foostraightlen = lambda v1, v2: round((math.pow(math.pow((v1.lon - v2.lon),2) +
                                               math.pow((v1.lat - v2.lat),2), 0.5)),2)
 t = time.time()
 res = []
-for i in xrange(100):
+for i in xrange(50):
     tsp = ts.TSP(1000, i, foostraightlen)
     tsp.load('testt.json')
     #print tspvertxs.vertexlist
