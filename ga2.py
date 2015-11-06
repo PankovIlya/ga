@@ -94,8 +94,8 @@ class Individual (object):
     def calcx(self):
         raise Exception('Absract method, return x')
 
-    def randomcreate(self, best=None):
-         raise Exception('Absract method, fill DNA')
+    def randomcreate(self, v_opt=True):
+         raise Exception('Absract method, fill DNA') #NotImpl
 
     def clone(self):
         clone = self.__class__(*self._args)
@@ -143,6 +143,7 @@ class Population (object):
         self.best.randomcreate()
         self.best.fitness()
         self.after_best_create(self.best)
+        self.elite = {}
 
     def after_best_create(self, best):
         pass        
@@ -152,6 +153,9 @@ class Population (object):
 
     def __setitem__(self, idx, val):
         self.population[idx] = val
+
+    def __getslice__(self, n, m):
+        return self.population[n:m]
 
     def conceiving(self):
         ind = self.ClsInd(*self.args)
@@ -187,7 +191,9 @@ class Population (object):
 
         if self.selection(self.best, vbest) == 1: 
             self.best = vbest.clone()
+            self.elite[self.best.fx] = self.best
 
+            
         #print [i.fx for i in self.individuals]  
 
 
@@ -216,9 +222,15 @@ class Population (object):
             return self.count - 1
  
         self.csort()
+        self.repetition()
+        self.csort()
+        #self.repetition(True)
         val = self.best.fx + ((self.max-self.best.fx)*self.rate_procent)
         cnt = find(val)
 
+        #print [ind.fx for ind in self.population]
+        
+        
         if cnt < self.count*self.best_population_rate:
             cnt = int(self.count*self.best_population_rate)
         elif cnt >= self.populationsize:
@@ -235,6 +247,16 @@ class Population (object):
         self.elite += clones.values()
 
 
+    def repetition(self, ast = False):
+        unique = {}
+        for ind in self.population:
+            unique[ind.fx] = ind         
+
+        new = [self.rand_ind() for _ in xrange(self.count - len(unique))]
+
+        self.population = unique.values() + new
+
+   
     def calc(self):
         self.extreme()
         self.rate()
@@ -247,16 +269,28 @@ class Population (object):
     def generation(self, size):
         for _ in xrange(self.count, size):
             ind = self.conceiving()
-            ind.randomcreate(self.best)
+            ind.randomcreate()
             ind.fitness()
             self.population.append(ind)
         self.best_population_idx = self.count - 1  
         
+    def rand_ind(self):
+        ind = self.conceiving()
+        ind.randomcreate(v_opt = False)
+        ind.fitness()
+        return ind      
 
+    
     def parent(self):
+<<<<<<< HEAD
         cnt = len(self.elite) - 1
         i = random.randint(0, cnt)
         return self.elite[i]
+=======
+        elite = self.elite.values()
+        i = random.randint(0, len(elite)-1)
+        return self[i]
+>>>>>>> master
         
 class Evolution (object):
     def __init__(self, size = 100, iteration = 20, generatemutation = 100,
@@ -264,7 +298,11 @@ class Evolution (object):
                  bestprotected = True, crossingovertype = const.coRandom,
                  ClassIndividual = None, MutationsClasses = [], args = [],
                  child_count = 2, printlocalresult = True, ratestatic = False,
+<<<<<<< HEAD
                  optimization_type = const.otMin, kfactor = float('inf'), tt_num = 1):
+=======
+                 optimization_type = const.otMin, kfactor = float('inf'), tt_num = 0):
+>>>>>>> master
 
         self.populationsize = size
         self.iteration = iteration
@@ -311,11 +349,15 @@ class Evolution (object):
                 self.disaster()
             self.anthropogeny()
             if self.printlocalresult:
+<<<<<<< HEAD
                 print "experiment {3} population {0} count{1}  best {2}".format(i, self.population.count, self.population.best, self.tt_num)
                 #top = [x.fx for x in self.population]
                 #top.sort()
                 #print top
 
+=======
+                print "ex {3} population {0} count {1}  best {2}".format(i, self.population.count, self.population.best, self.tt_num)
+>>>>>>> master
                 #print self.population.best
                         
             

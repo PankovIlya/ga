@@ -1,6 +1,11 @@
 import ga2 as ga
 import vertexs, tsp_optimizations as opt
+<<<<<<< HEAD
 import random as rand, os, json
+=======
+import random as rand, os
+import json
+>>>>>>> master
 
 from PIL import Image 
 from PIL import ImageDraw
@@ -52,35 +57,40 @@ class Way (ga.Individual):
         sumx += self.vertexs.distance[self[-1].id][self[0].id]
         return sumx
     
-    foofx = lambda self, x: x
+    foofx = lambda self, x: x - 2000
 
-    def randomcreate(self, best=None):
+    def randomcreate(self, v_opt=True):
         
-        best = None
-        if best:
-            self.dna = best.clone().dna
-        else:
-            cnt = self.vertexs.count
-            if cnt < 2:
-                raise Exception('City count < 2!')
-            for i in xrange(cnt):
-                g = self.addgen()
+        cnt = self.vertexs.count
+        if cnt < 2:
+            raise Exception('City count < 2!')
+        for i in xrange(cnt):
+            g = self.addgen()
 
-            rand.shuffle(self.dna)
+        rand.shuffle(self.dna)
 
-            for i in xrange(cnt):
-                self[i].val = i 
+        for i in xrange(cnt):
+            self[i].val = i 
 
         self.fitness()
-        opt.Gready().mutate(self, 0, None)
+        if v_opt:
+            opt.Gready().mutate(self, 0, None)
         #CrossFide().mutate(self, -1, None)
 
 class TSP( object ):
+<<<<<<< HEAD
     def __init__(self, iteration, num, lenfoo):
         self.vertexs = vertexs.Vertexs(lenfoo)
         self.tspga = None
         self.iteration = iteration
         self.tt_num = num
+=======
+    def __init__(self, iteration, tt_num, lenfoo):
+        self.vertexs = vertexs.Vertexs(lenfoo)
+        self.tspga = None
+        self.iteration = iteration
+        self.tt_num = tt_num
+>>>>>>> master
 
     def after_best_create(self, best):
         CrossFide().mutate(best, 0, None)
@@ -91,8 +101,13 @@ class TSP( object ):
     def calc(self):
         self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
+<<<<<<< HEAD
                                   MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity], #Gready 
                                   args = [self.vertexs], ratestatic = False, kfactor = 40, tt_num = self.tt_num)
+=======
+                                  MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity, opt.Gready], #Gready 
+                                  args = [self.vertexs], ratestatic = True, kfactor = 900, tt_num = self.tt_num)
+>>>>>>> master
 
         self.tspga.after_best_create = self.after_best_create
         self.tspga.calc()
@@ -144,7 +159,23 @@ class TSP( object ):
         self.vertexs.calcmatrix()
         #print self.vertexs
 
+<<<<<<< HEAD
           
+=======
+    def result(self):
+        return self.tspga.population.best.fx
+
+if __name__ == "__main__":
+    import json, math
+    foostraightlen = lambda v1, v2: round((math.pow(math.pow((v1.lon - v2.lon),2) +
+                                                 math.pow((v1.lat - v2.lat),2), 0.5)), 2)
+    tsp = TSP(500, 0, foostraightlen)
+    tsp.load('testt.json')
+    #print tspvertxs.vertexlist
+    #print tsp.vertexs.distance[1][9]
+
+    tsp.calc()
+>>>>>>> master
 
 
     
