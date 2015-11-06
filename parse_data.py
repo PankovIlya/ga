@@ -25,7 +25,7 @@ def load(filename):
 lst = load('result.json') 
 lenw = 0
 
-foo = lambda x1,x2,y1,y2 : round((((x1 - x2)**2 + (y1 - y2)**2)**0.5),0)
+foo = lambda x1,x2,y1,y2 : round((((x1 - x2)**2 + (y1 - y2)**2)**0.5),2)
 
 for idx in xrange(len(lst) - 1):
     lenw += foo(lst[idx][0], lst[idx+1][0], lst[idx][1], lst[idx+1][1])
