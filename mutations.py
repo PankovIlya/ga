@@ -149,12 +149,12 @@ class Crossingover (Mutation):
         self.population = parents
 
         #vparent1 = parents.parent()
-        vparent1 = parents.best
-        #vparent2 = individual
+        #vparent2 = parents.best
+        vparent1 = individual
         
         i = 0
         vparent2 = vparent1
-        while vparent2 == vparent1 and i < 100:
+        while vparent2.fx == vparent1.fx and i < 100:
             vparent2 = parents.parent()
             i += 1
 
@@ -168,11 +168,10 @@ class Crossingover (Mutation):
             #print child.fx, vparent1.fx,  vparent2.fx
             #print parents.selection(vparent1, child), parents.selection(vparent2, child)
             if parents.selection(vparent1, child) == 1 \
-                or  parents.selection(vparent2, child) == 1:
+                or  parents.selection(vparent2, child) != 0:
                 res += 1
                 parents.add(child)
-
-        self.after_mutate(children, res, parents)
+                self.after_mutate(child, res, parents)
 
         return res
 
