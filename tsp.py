@@ -53,7 +53,7 @@ class Way (ga.Individual):
         sumx += self.vertexs.distance[self[-1].id][self[0].id]
         return sumx
     
-    foofx = lambda self, x: x
+    foofx = lambda self, x: x - 2000
 
     def randomcreate(self, v_opt=True):
         
@@ -86,9 +86,8 @@ class TSP( object ):
     def calc(self):
         self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
-                                  MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity], #Gready 
-                                  args = [self.vertexs], ratestatic = False, kfactor = 500,
-                                  tt_num = self.tt_num)
+                                  MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity, opt.Gready], #Gready 
+                                  args = [self.vertexs], ratestatic = True, kfactor = 900, tt_num = self.tt_num)
 
         self.tspga.after_best_create = self.after_best_create
         self.tspga.calc()
@@ -145,8 +144,8 @@ class TSP( object ):
 
 if __name__ == "__main__":
     import json, math
-    foostraightlen = lambda v1, v2: int(math.pow(math.pow((v1.lon - v2.lon),2) +
-                                                 math.pow((v1.lat - v2.lat),2), 0.5))
+    foostraightlen = lambda v1, v2: round((math.pow(math.pow((v1.lon - v2.lon),2) +
+                                                 math.pow((v1.lat - v2.lat),2), 0.5)), 2)
     tsp = TSP(500, 0, foostraightlen)
     tsp.load('testt.json')
     #print tspvertxs.vertexlist

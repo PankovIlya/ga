@@ -6,17 +6,15 @@ import random as rand
 class CrossingoverTSP (mut.Crossingover):
     def __init__(self):
             super(self.__class__, self).__init__()
-            self.rate = 0.9
-    def after_mutate(self, children, res, population):
-        pass
-        #for child in children:
-        #    CrossFide().mutate(child, 0, population)     
+            self.rate = 0.40
+    def after_mutate(self, child, res, population):
+        CrossFide().mutate(child, 0, population)     
 
 class ExchangeCity(mut.Mutation):
     def __init__(self):
             super(self.__class__, self).__init__()
             self.name = 'ExchangeCity'
-            self.rate = 0.95
+            self.rate = 0.6
             
     def mutate(self, individual, cnt, population):
         def change(idx1, idx2):
@@ -37,7 +35,7 @@ class MoveCity(mut.Mutation):
     def __init__(self):
             super(self.__class__, self).__init__()
             self.name = 'MoveCity'
-            self.rate = 1
+            self.rate = 0.8
    
     def mutate(self, individual, cnt, population):
 
@@ -106,7 +104,7 @@ class Gready(mut.Mutation):
     def __init__(self):
             super(self.__class__, self).__init__()
             self.name = 'Gready'
-            self.rate = 0.5
+            self.rate = 1
             
     def mutate(self, individual, cnt, population):
         cities = {}
@@ -123,7 +121,7 @@ class Gready(mut.Mutation):
             idx1, idx2 = 0, individual.count -1
         else:   
             idx1 = rand.randint(0, individual.count-2)
-            idx2 = rand.randint(idx1+2, min(idx1+12, individual.count))
+            idx2 = rand.randint(idx1+2, min(idx1+7, individual.count))
             
         
         fx = individual.fitness()

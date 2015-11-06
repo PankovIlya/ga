@@ -142,6 +142,7 @@ class Population (object):
         self.best.randomcreate()
         self.best.fitness()
         self.after_best_create(self.best)
+        self.elite = {}
 
     def after_best_create(self, best):
         pass        
@@ -187,7 +188,9 @@ class Population (object):
 
         if self.selection(self.best, vbest) == 1: 
             self.best = vbest.clone()
+            self.elite[self.best.fx] = self.best
 
+            
         #print [i.fx for i in self.individuals]  
 
 
@@ -234,23 +237,15 @@ class Population (object):
 
 
     def repetition(self, ast = False):
-        fx = float('inf')
-        n0, n = 0, 0
-        for i in xrange(self.count):
-            if fx != self[i].fx:
-                if n0 != n: 
-                    #cdprint n0, n
-                    #print [ind.fx for ind in self[n0:n]]
-                    new = [self.rand_ind() for _ in xrange(n-n0)]
-                    self.population = self[:n0+1] + new + self[n:]
-                    #print [ind.fx for ind in self[n0:n]]
-                    #if ast and self.count > 1:
-                    #    raise Exeption('[eq')
-                fx, n0, n = self[i].fx, i, i
-            else:
-                n += 1
+        unique = {}
+        for ind in self.population:
+            unique[ind.fx] = ind         
 
+        new = [self.rand_ind() for _ in xrange(self.count - len(unique))]
 
+        self.population = unique.values() + new
+
+   
     def calc(self):
         self.extreme()
         self.rate()
@@ -270,13 +265,14 @@ class Population (object):
         
     def rand_ind(self):
         ind = self.conceiving()
-        ind.randomcreate(v_opt = True)
+        ind.randomcreate(v_opt = False)
         ind.fitness()
         return ind      
 
     
     def parent(self):
-        i = random.randint(0, self.best_population_idx)
+        elite = self.elite.values()
+        i = random.randint(0, len(elite)-1)
         return self[i]
         
 class Evolution (object):
