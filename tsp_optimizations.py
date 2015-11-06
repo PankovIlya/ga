@@ -6,7 +6,7 @@ import random as rand
 class CrossingoverTSP (mut.Crossingover):
     def __init__(self):
             super(self.__class__, self).__init__()
-            self.rate = 0.40
+            self.rate = 0.25
     def after_mutate(self, child, res, population):
         CrossFide().mutate(child, 0, population)     
 
@@ -14,46 +14,64 @@ class ExchangeCity(mut.Mutation):
     def __init__(self):
             super(self.__class__, self).__init__()
             self.name = 'ExchangeCity'
-            self.rate = 0.6
+            self.rate = 0.5
             
     def mutate(self, individual, cnt, population):
+        ind = individual.clone()
+
+
         def change(idx1, idx2):
-            individual[idx2]._id, individual[idx1]._id = individual[idx1]._id, individual[idx2]._id
+            ind[idx2]._id, ind[idx1]._id = ind[idx1]._id, ind[idx2]._id
             
                 
         fx = individual.fitness()
         
-        idx1 = rand.randint(0, individual.count-1)
-        idx2 = rand.randint(0, individual.count-1)
+        idx1 = rand.randint(0, ind.count-1)
+        idx2 = idx1
+        while idx1 == idx2:
+            idx2 = rand.randint(0, ind.count-1)
         change(idx1, idx2)
 
-        if individual.fitness() < fx*individual.back:
-            CrossFide().mutate(individual, -1, population)
+        if ind.fitness() < fx*individual.back:
+            CrossFide().mutate(ind, -1, population)
+
+        if ind.fx < fx:
+            population.add(ind)
+
+        return ind.fx
+
 
 
 class MoveCity(mut.Mutation):
     def __init__(self):
             super(self.__class__, self).__init__()
             self.name = 'MoveCity'
-            self.rate = 0.8
+            self.rate = 0.75
    
     def mutate(self, individual, cnt, population):
-
-        
+        ind = individual.clone()
+                
         fx = individual.fitness()
 
-        idx1 = rand.randint(0, individual.count-1)
-        idx2 = rand.randint(0, individual.count-1)
+        idx1 = rand.randint(0, ind.count-1)
+        idx2 = idx1
+        while idx1 == idx2:
+            idx2 = rand.randint(0, ind.count-1)
 
         idx1, idx2 = min(idx1, idx2), max(idx1, idx2)
-        id1 = individual[idx1]
+        id1 = ind[idx1]
 
-        individual.dna = individual.dna[:idx1] + individual.dna[idx1+1:idx2+1] + \
-                         [id1] + individual.dna[idx2+1:] 
+        ind.dna = ind.dna[:idx1] + ind.dna[idx1+1:idx2+1] + [id1] + ind.dna[idx2+1:] 
 
-        individual.renum2()
-        if individual.fitness() < fx*individual.back:
-            CrossFide().mutate(individual, -1, population)
+        ind.renum2()
+
+        if ind.fitness() < fx*individual.back:
+            CrossFide().mutate(ind, -1, population)
+
+        if ind.fx < fx:
+            population.add(ind)
+
+        return ind.fx
 
 
 class CrossFide(mut.Mutation):
@@ -96,7 +114,8 @@ class CrossFide(mut.Mutation):
                             #print 'hey', individual.fitness()
                 j += 1
             i +=1
-        individual.fitness()
+
+        return individual.fitness()
         #1/0
                     
 
@@ -106,7 +125,10 @@ class Gready(mut.Mutation):
             self.name = 'Gready'
             self.rate = 1
             
-    def mutate(self, individual, cnt, population):
+    def mutate(self, ind, cnt, population):
+        individual = ind.clone()
+        fx = ind.fitness()
+
         cities = {}
         
         def changeid(idx1, idx2):
@@ -121,11 +143,8 @@ class Gready(mut.Mutation):
             idx1, idx2 = 0, individual.count -1
         else:   
             idx1 = rand.randint(0, individual.count-2)
-            idx2 = rand.randint(idx1+2, min(idx1+7, individual.count))
-            
-        
-        fx = individual.fitness()
-
+            idx2 = rand.randint(idx1+2, min(idx1+9, individual.count))
+      
         reserve = {}
         for city in individual.dna[:idx1]:
             reserve[city.id] = city.val
@@ -174,5 +193,16 @@ class Gready(mut.Mutation):
             i += 1
 
         #print "result",  individual.fitness(), fx
-        if individual.fitness() < fx*individual.back:
+
+        if individual.fitness() < fx*ind.back:
            CrossFide().mutate(individual, cnt, population)
+
+        if individual.fx < fx:
+            if population:
+                population.add(individual)
+            else:
+                ind = individual
+
+        return individual.fx
+
+        

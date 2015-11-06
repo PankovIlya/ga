@@ -3,9 +3,9 @@ import vertexs, tsp_optimizations as opt
 import random as rand, os
 import json
 
-from PIL import Image 
-from PIL import ImageDraw
-from PIL import ImageFont
+#from PIL import Image 
+#from PIL import ImageDraw
+#from PIL import ImageFont
 
 
 class Way (ga.Individual):
@@ -53,7 +53,7 @@ class Way (ga.Individual):
         sumx += self.vertexs.distance[self[-1].id][self[0].id]
         return sumx
     
-    foofx = lambda self, x: x - 2000
+    foofx = lambda self, x: x
 
     def randomcreate(self, v_opt=True):
         
@@ -71,7 +71,7 @@ class Way (ga.Individual):
         self.fitness()
         if v_opt:
             opt.Gready().mutate(self, 0, None)
-        #CrossFide().mutate(self, -1, None)
+            #CrossFide().mutate(self, -1, None)
 
 class TSP( object ):
     def __init__(self, iteration, tt_num, lenfoo):
@@ -87,13 +87,13 @@ class TSP( object ):
         self.tspga = ga.Evolution(size = 190, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
                                   MutationsClasses = [opt.CrossingoverTSP, opt.ExchangeCity, opt.MoveCity, opt.Gready], #Gready 
-                                  args = [self.vertexs], ratestatic = True, kfactor = 900, tt_num = self.tt_num)
+                                  args = [self.vertexs], ratestatic = True, kfactor = 1850, tt_num = self.tt_num)
 
         self.tspga.after_best_create = self.after_best_create
         self.tspga.calc()
         best = self.tspga.population.best
         best.ordval()
-        self.setimage(best)
+        #self.setimage(best)
         self.save(best)
 
     def setimage(self, best):

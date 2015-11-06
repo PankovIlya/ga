@@ -107,7 +107,7 @@ class Individual (object):
 class Population (object):
     def __init__(self, populationsize = 100, bestprotected = True, opt_type = const.otMin,
                  ClsInd = None, args = [], calc_fitness = True,
-                 rate_procent = 0.25, best_population_rate = 0.25):
+                 rate_procent = 0.15, best_population_rate = 0.25):
         self.populationsize = populationsize 
         self.bestprotected = bestprotected
         self.args = args
@@ -126,6 +126,7 @@ class Population (object):
         self.rate_procent = rate_procent
         self.best_population_rate = best_population_rate
         self.best_population_idx = 0
+        self.elite = {}
 
     def clone(self):
         children = self.__class__(self.bestprotected, self.optimisationtype, self.ClsInd, self.args)
@@ -142,7 +143,7 @@ class Population (object):
         self.best.randomcreate()
         self.best.fitness()
         self.after_best_create(self.best)
-        self.elite = {}
+        self.elite[self.best.fx] = self.best
 
     def after_best_create(self, best):
         pass        
@@ -215,31 +216,33 @@ class Population (object):
         def find(val):
             for i in xrange(self.count):
                 if self[i].fx > val:
-                    return i-1
-            return self.count - 1
+                    return i
+            return self.count
  
-        self.csort()
-        self.repetition()
         self.csort()
         #self.repetition(True)
         val = self.best.fx + ((self.max-self.best.fx)*self.rate_procent)
         cnt = find(val)
 
-        #print [ind.fx for ind in self.population]
-        
-        
-        if cnt < self.count*self.best_population_rate:
-            cnt = int(self.count*self.best_population_rate)
-        elif cnt >= self.populationsize:
-            cnt = self.populationsize-1
-
-        self.best_population_idx = cnt
+        self.repetition(cnt)
+        self.csort()
 
 
-    def repetition(self, ast = False):
+    def repetition(self, cnt):
+        elite = self.elite.values()
+        for i in xrange(cnt):
+            elite.append(self[i])
+
+        self.rang(elite)
+        elite = elite[:20]
+
+        self.elite = {}
+        for el in elite:
+            self.elite[el.fx] = el.clone()
+
         unique = {}
         for ind in self.population:
-            unique[ind.fx] = ind         
+            unique[ind.fx] = ind  
 
         new = [self.rand_ind() for _ in xrange(self.count - len(unique))]
 
@@ -361,7 +364,7 @@ if __name__ == "__main__":
             
         foofx = lambda self, x: x**2
 
-        def randomcreate(self, best=None):
+        def randomcreate(self, **args):
             for i in xrange(32):
                 x = random.randint(0,1)
                 g = self.addgen()
