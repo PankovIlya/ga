@@ -69,8 +69,8 @@ class Way (ga.Individual):
             self[i].val = i 
 
         self.fitness()
-        if v_opt:
-            opt.Gready().mutate(self, 0, None)
+        #if v_opt:
+        #    opt.Gready().mutate(self, 0, None)
             #CrossFide().mutate(self, -1, None)
 
 class TSP( object ):
@@ -83,6 +83,9 @@ class TSP( object ):
     def after_best_create(self, best):
         CrossFide().mutate(best, 0, None)
 
+    def after_generation(self, best):
+        return best.fx < 2092.60 
+
     def calc(self):
         self.tspga = ga.Evolution(size = 220, iteration = self.iteration, 
                                   generatemutation = 20, populationratemutation = 90, ClassIndividual = Way,
@@ -90,6 +93,7 @@ class TSP( object ):
                                   args = [self.vertexs], ratestatic = True, kfactor = 18050, tt_num = self.tt_num)
 
         self.tspga.after_best_create = self.after_best_create
+        self.tspga.after_generation = self.after_generation
         self.tspga.calc()
         best = self.tspga.population.best
         best.ordval()

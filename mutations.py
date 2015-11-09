@@ -117,11 +117,12 @@ class Mutations (object):
             mutation.total += 1
             self.all_total += 1
 
-            fxb = population[idx].fx
+            fxo = population[idx].fx
 
-            fxa = mutation.mutate(population[idx], cnt, population)
+            ind = mutation.mutate(population[idx], cnt, population)
 
-            if  const.CompareType[population.optimisationtype](fxa, fxb) == 1: 
+            if  ind and const.CompareType[population.optimisationtype](ind.fitness(), fxo) == 1:
+                population[idx] = ind 
                 mutation.advance += 1
                 self.all_advance += 1
 
@@ -161,12 +162,13 @@ class Crossingover (Mutation):
         for child in children:
             self.after_mutate(child, cnt, parents)
             if parents.selection(vparent1, child) == 1 and parents.selection(vparent2, child) != 0:
-                parents.add(child)
-                fx = child.fx
+                #parents.add(child)
+                return child
+                #fx = child.fx
                 
                 
 
-        return fx
+        return None
 
          
  
@@ -195,10 +197,11 @@ class MRand (Mutation):
         super(self.__class__, self).__init__()
         self.name = 'Random'
     
-    def mutate(self, individual, cnt, population):
+    def mutate(self, ind, cnt, population):
+        individual = ind.clone()
         for i in xrange(cnt):
             idx = random.randint(0, individual.count-1)
             individual[idx].val = random.randint(0,1)
 
-        return individual.fitness()
+        return individual
 

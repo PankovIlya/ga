@@ -35,10 +35,10 @@ class ExchangeCity(mut.Mutation):
         if ind.fitness() < fx*individual.back:
             CrossFide().mutate(ind, -1, population)
 
-        if ind.fx < fx:
-            population.add(ind)
+        #if ind.fx < fx:
+        #    population.add(ind)
 
-        return ind.fx
+        return ind
 
 
 
@@ -68,10 +68,10 @@ class MoveCity(mut.Mutation):
         if ind.fitness() < fx*individual.back:
             CrossFide().mutate(ind, -1, population)
 
-        if ind.fx < fx:
-            population.add(ind)
+        #if ind.fx < fx:
+        #    population.add(ind)
 
-        return ind.fx
+        return ind
 
 
 class CrossFide(mut.Mutation):
@@ -197,12 +197,6 @@ class Gready(mut.Mutation):
         if individual.fitness() < fx*ind.back:
            CrossFide().mutate(individual, cnt, population)
 
-        if individual.fx < fx:
-            if population:
-                population.add(individual)
-            else:
-                ind = individual
-
-        return individual.fx
+        return individual
 
         

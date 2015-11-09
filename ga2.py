@@ -333,6 +333,11 @@ class Evolution (object):
             if self.printlocalresult:
                 print "ex {3} population {0} count {1}  best {2}".format(i, self.population.count, self.population.best, self.tt_num)
                 #print self.population.best
+            if self.after_generation(self.population.best):
+                break
+
+    def after_generation(self, best):
+        return False
                         
             
     def anthropogeny(self):
