@@ -154,7 +154,7 @@ class Crossingover (Mutation):
             i += 1
 
         if i == 100:
-            return fx
+            return individual
             print '!!!!!!!!!!!!!!!!!!!!! warning !!! no parent for Crossingover ', parents.best_population_idx
     
         children = self.fertilisation(vparent1, vparent2)

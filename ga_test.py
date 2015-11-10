@@ -129,7 +129,7 @@ class Sstting (ga.Individual):
 
         return levenshtein_distance(self.sword, word)
         
-    foofx = lambda self, x: 5**x
+    foofx = lambda self, x: x
 
     def randomcreate(self, **args):
         n = len(alphabet)
@@ -151,19 +151,23 @@ class MChange (mut.Mutation):
         super(self.__class__, self).__init__()
         self.name = 'Change'
         
-    def mutate(self, individual, cnt, population):
+    def mutate(self, ind, cnt, population):
+        individual = ind.clone()
         n = len(alphabet)
         for i in xrange(cnt):
             idx = random.randint(0, individual.count-1)
             j = random.randint(0,n-1)
             individual[idx].val = alphabet[j]
 
+        return individual
+
 class MDelIns (mut.Mutation):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.name = 'MDelIns'
         
-    def mutate(self, individual, cnt, population):
+    def mutate(self, ind, cnt, population):
+        individual = ind.clone()
         n = len(alphabet)
         for i in xrange(cnt):
             idx1 = random.randint(0, individual.count-1)
@@ -175,27 +179,35 @@ class MDelIns (mut.Mutation):
 
             individual[idx2].val = val
 
+        return individual
+
 class MDel (mut.Mutation):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.name = 'MDel'
         
-    def mutate(self, individual, cnt, population):
+    def mutate(self, ind, cnt, population):
+        individual = ind.clone()
         n = len(alphabet)
         idx = random.randint(0, individual.count-1)
         del individual.dna[idx]
+
+        return individual
 
 class MIns (mut.Mutation):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.name = 'MIns'
         
-    def mutate(self, individual, cnt, population):
+    def mutate(self, ind, cnt, population):
+        individual = ind.clone()
         n = len(alphabet)
         g = individual.addgen()
         j = random.randint(0,n-1)
         g.val = alphabet[j]
         individual.dna.append(g)
+
+        return individual
 
 
 s = 'Marchelo teaches Savelys evolution biology. Happy Birthday!!!'
@@ -203,12 +215,12 @@ ss = ga.Evolution(size = 750, iteration = 100,
                generatemutation = 25, populationratemutation = 80,
                ClassIndividual = Sstting,
                MutationsClasses = [mut.Crossingover, MChange, MDelIns, MDel, MIns],
-               args = [s], kfactor = 30)
+               args = [s])
 
 ss.calc()
 print "It's more thins setting"
 ss.populationsize = 2000
-ss.generatemutation = 12
+ss.generatemutation = 6
 ss.iteration = 50
 ss.generation()
 ss.calc()
