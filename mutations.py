@@ -122,7 +122,8 @@ class Mutations (object):
             ind = mutation.mutate(population[idx], cnt, population)
 
             if  ind and const.CompareType[population.optimisationtype](ind.fitness(), fxo) == 1:
-                population[idx] = ind 
+                population[idx] = ind
+                population[idx].mutation += [mutation.name]
                 mutation.advance += 1
                 self.all_advance += 1
 
@@ -188,6 +189,7 @@ class Crossingover (Mutation):
     def meiosis(self, child, parent1, parent2):
         len_chr = random.randint(0, parent1.count)
         child.dna = parent1[:len_chr] + parent2[len_chr:]
+        #child.mutation += [parent1.mutation, parent2.mutation]
         child.fitness()
 
         return child

@@ -79,6 +79,7 @@ class TSP( object ):
         self.tspga = None
         self.iteration = iteration
         self.tt_num = tt_num
+        self.best = None
 
     def after_best_create(self, best):
         CrossFide().mutate(best, 0, None)
@@ -95,10 +96,10 @@ class TSP( object ):
         self.tspga.after_best_create = self.after_best_create
         self.tspga.after_generation = self.after_generation
         self.tspga.calc()
-        best = self.tspga.population.best
-        best.ordval()
+        self.best = self.tspga.population.best
+        self.best.ordval()
         #self.setimage(best)
-        self.save(best)
+        self.save(self.best)
 
     def setimage(self, best):
         im = Image.new("RGB", (512, 512), "white")
@@ -150,12 +151,13 @@ if __name__ == "__main__":
     import json, math
     foostraightlen = lambda v1, v2: round((math.pow(math.pow((v1.lon - v2.lon),2) +
                                                  math.pow((v1.lat - v2.lat),2), 0.5)), 2)
-    tsp = TSP(500, 0, foostraightlen)
+    tsp = TSP(2000, 0, foostraightlen)
     tsp.load('testt.json')
     #print tspvertxs.vertexlist
     #print tsp.vertexs.distance[1][9]
 
     tsp.calc()
+    print tsp.best.mutation
 
 
     

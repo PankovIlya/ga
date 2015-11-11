@@ -11,11 +11,12 @@ for i in xrange(500):
     #print tspvertxs.vertexlist
     #print tsp.vertexs.distance[1][9]
     tsp.calc()
-    res += [tsp.result()]
+    res += [tsp.best]
     
-res.sort()
-l100 = filter(lambda x: x < 2093, res)
-print 'opt', len(l100), 'rrr', l100 
-l100 = filter(lambda x: 2093 < x < 2100, res)
-print 'result < 2100', len(l100), 'rrr', l100 
+l100 = filter(lambda x: tsp.best.fx < 2092.60, res)
+l100.sort(key = lambda x: x.num_gn)
+print 'opt', len(l100), 'rrr', [x.num_gn for x in l100] 
+l100 = filter(lambda x: 2092.60 < tsp.best.fx < 2100, res)
+l100.sort(key = lambda x: x.fx)
+print 'result < 2100', len(l100), 'rrr', [x.fx for x in l100] 
 print time.time() - t

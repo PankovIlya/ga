@@ -18,6 +18,8 @@ class Individual (object):
         self._fx = 0
         self._args = args
         self.sorted = False
+        self.mutation = ['Random Create']
+        self.num_gn = None
         
     def __getitem__(self, idx):
         return self.dna[idx]
@@ -100,6 +102,8 @@ class Individual (object):
     def clone(self):
         clone = self.__class__(*self._args)
         clone.dna = self[0:]
+        clone.mutation = [m for m in self.mutation]
+        clone.num_gn = self.num_gn
         clone.fitness()
         return clone
         
@@ -168,7 +172,7 @@ class Population (object):
 
                    
     #min, max, sum - x, fx
-    def extreme(self):
+    def extreme(self, num_gn):
 
         self.sumx, self.sumfx, self.sumoptfx = 0, 0, 0.0
         vbest = self.best
@@ -189,6 +193,7 @@ class Population (object):
 
         if self.selection(self.best, vbest) == 1: 
             self.best = vbest.clone()
+            self.best.num_gn = num_gn
             self.elite[self.best.fx] = self.best
 
             
@@ -249,8 +254,8 @@ class Population (object):
         self.population = unique.values() + new
 
    
-    def calc(self):
-        self.extreme()
+    def calc(self, num_generation):
+        self.extreme(num_generation)
         self.rate()
         self.population = self.population[:self.populationsize]
         
@@ -319,7 +324,7 @@ class Evolution (object):
         #print self.mutations
         
 
-        self.population.calc()
+        self.population.calc(0)
 
     def generation(self):
         self.population.generation(self.populationsize)
@@ -329,9 +334,13 @@ class Evolution (object):
         for i in xrange(1, self.iteration):
             if not (i % self.kfactor):
                 self.disaster()
-            self.anthropogeny()
+            self.anthropogeny(i)
             if self.printlocalresult:
-                print "ex {3} population {0} count {1}  best {2}".format(i, self.population.count, self.population.best, self.tt_num)
+                print "ex {3} population {0} count {1}  best {2} num_gn {4}".format(i,
+                                                                                    self.population.count,
+                                                                                    self.population.best,
+                                                                                    self.tt_num,
+                                                                                    self.population.best.num_gn)
                 #print self.population.best
             if self.after_generation(self.population.best):
                 break
@@ -340,9 +349,9 @@ class Evolution (object):
         return False
                         
             
-    def anthropogeny(self):
+    def anthropogeny(self, num_generation):
         self.mutation()
-        self.population.calc()
+        self.population.calc(num_generation)
         
     
 
@@ -357,6 +366,8 @@ class Evolution (object):
         #pass
         self.population.population = [self.population.best.clone()]
         self.generation()
+
+    best = property(lambda self: self.population.best)
         
 
 if __name__ == "__main__":
@@ -378,9 +389,10 @@ if __name__ == "__main__":
             self.fitness()
 
 
-    min_x2 = Evolution(size = 100, iteration = 25, generatemutation = 30,
+    min_x2 = Evolution(size = 100, iteration = 24, generatemutation = 30,
                        populationratemutation = 80, ClassIndividual = X2,
                        MutationsClasses = [mut.Crossingover, mut.MRand], printlocalresult = True)
     min_x2.calc()
+    print min_x2.best.mutation
 
    
