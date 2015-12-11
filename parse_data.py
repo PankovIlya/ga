@@ -1,5 +1,19 @@
 import json
 
+
+def parse(filename):
+    f = open(filename)
+    res = []
+    lstr = f.readline()
+    while x:
+        res += [lstr.rstrip('\n')]
+        lstr = f.readline()
+    return res
+
+lst = parse('result.json')['cities']
+
+
+
 def parse(filename):
     f = open(filename)
     res = []
@@ -14,7 +28,11 @@ def parse(filename):
     res = {"structure" : ["x", "y"], "cities" : res}
     return res
 
-#lst = parse('result.json')['cities']
+lst = parse('result.json')['cities']
+
+
+
+
 
 def load(filename):
     f = open(filename)
