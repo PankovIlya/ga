@@ -1,3 +1,3 @@
 begin
-  test
-end
+  test;
+end;
