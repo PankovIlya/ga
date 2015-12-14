@@ -1,2 +1,3 @@
-test
 begin
+  test
+end
